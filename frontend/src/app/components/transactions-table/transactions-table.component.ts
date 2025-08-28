@@ -37,11 +37,36 @@ import { TransactionService, Transaction } from '../../services/transaction.serv
           <table class="data-table">
             <thead>
               <tr>
-                <th>תאריך</th>
-                <th>תיאור</th>
-                <th>סכום</th>
-                <th>סוג</th>
-                <th>לקוח/ספק</th>
+                <th (click)="sortBy('date')" style="cursor:pointer">
+                  תאריך
+                  <span class="sort-arrow" [class.active-arrow]="sortColumn === 'date'" [class.asc]="sortColumn === 'date' && sortDirection === 'asc'" [class.desc]="sortColumn === 'date' && sortDirection === 'desc'">
+                    {{sortColumn === 'date' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+                  </span>
+                </th>
+                <th (click)="sortBy('description')" style="cursor:pointer">
+                  תיאור
+                  <span class="sort-arrow" [class.active-arrow]="sortColumn === 'description'" [class.asc]="sortColumn === 'description' && sortDirection === 'asc'" [class.desc]="sortColumn === 'description' && sortDirection === 'desc'">
+                    {{sortColumn === 'description' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+                  </span>
+                </th>
+                <th (click)="sortBy('amount')" style="cursor:pointer">
+                  סכום
+                  <span class="sort-arrow" [class.active-arrow]="sortColumn === 'amount'" [class.asc]="sortColumn === 'amount' && sortDirection === 'asc'" [class.desc]="sortColumn === 'amount' && sortDirection === 'desc'">
+                    {{sortColumn === 'amount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+                  </span>
+                </th>
+                <th (click)="sortBy('type')" style="cursor:pointer">
+                  סוג
+                  <span class="sort-arrow" [class.active-arrow]="sortColumn === 'type'" [class.asc]="sortColumn === 'type' && sortDirection === 'asc'" [class.desc]="sortColumn === 'type' && sortDirection === 'desc'">
+                    {{sortColumn === 'type' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+                  </span>
+                </th>
+                <th (click)="sortBy('client')" style="cursor:pointer">
+                  לקוח/ספק
+                  <span class="sort-arrow" [class.active-arrow]="sortColumn === 'client'" [class.asc]="sortColumn === 'client' && sortDirection === 'asc'" [class.desc]="sortColumn === 'client' && sortDirection === 'desc'">
+                    {{sortColumn === 'client' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+                  </span>
+                </th>
                 <th class="actions-col">פעולות</th>
               </tr>
             </thead>
@@ -86,6 +111,17 @@ import { TransactionService, Transaction } from '../../services/transaction.serv
     </section>
   `,
   styles: [`
+    .sort-arrow {
+      font-size: 0.9em;
+      margin-right: 0.2em;
+      color: #bdbdbd;
+      transition: color 0.2s;
+      user-select: none;
+    }
+    .sort-arrow.active-arrow {
+      color: var(--primary-color, #1976d2);
+      font-weight: bold;
+    }
     .card {
       background: var(--white);
       border: 1px solid var(--border-color);
@@ -327,6 +363,8 @@ import { TransactionService, Transaction } from '../../services/transaction.serv
 })
 export class TransactionsTableComponent implements OnInit, OnDestroy {
   transactions: Transaction[] = [];
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
   private destroy$ = new Subject<void>();
 
   constructor(private transactionService: TransactionService) {}
@@ -335,13 +373,42 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
     this.transactionService.transactions$
       .pipe(takeUntil(this.destroy$))
       .subscribe(transactions => {
-        this.transactions = transactions;
+        this.transactions = this.getSorted(transactions);
       });
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  sortBy(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.transactions = this.getSorted(this.transactions);
+  }
+
+  getSorted(transactions: Transaction[]): Transaction[] {
+    if (!this.sortColumn) return [...transactions];
+    return [...transactions].sort((a, b) => {
+      let aVal = (a as any)[this.sortColumn];
+      let bVal = (b as any)[this.sortColumn];
+      if (this.sortColumn === 'amount') {
+        aVal = Number(aVal);
+        bVal = Number(bVal);
+      }
+      if (this.sortColumn === 'date') {
+        aVal = new Date(aVal);
+        bVal = new Date(bVal);
+      }
+      if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
   }
 
   deleteTransaction(index: number) {

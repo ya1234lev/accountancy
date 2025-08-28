@@ -10,6 +10,18 @@ import { Transaction } from '../../services/transaction.service';
   styleUrls: ['./transaction-form.component.css']
 })
 export class TransactionFormComponent {
+  errorMessage: string = '';
+  // ...existing code...
+  onDueDateChange(): void {
+    this.errorMessage = '';
+    if (this.paymentDetails.dueDate && this.newTransaction.date) {
+      const due = new Date(this.paymentDetails.dueDate);
+      const tx = new Date(this.newTransaction.date);
+      if (due <= tx) {
+        this.errorMessage = 'תאריך הפירעון חייב להיות מאוחר מתאריך העסקה';
+      }
+    }
+  }
   @Output() transactionAdded = new EventEmitter<Omit<Transaction, 'id'>>();
 
   customers = ['לקוח א', 'לקוח ב', 'לקוח ג'];
@@ -29,9 +41,13 @@ export class TransactionFormComponent {
   };
 
   onSubmit(): void {
-    if (this.newTransaction.date && this.newTransaction.amount && this.newTransaction.client) {
+
+    console.log("paymentDetails",this.paymentDetails.amount);
+    console.log("newTransaction",this.newTransaction);
+    
+    if (this.newTransaction.date && this.paymentDetails.amount && this.newTransaction.client) {
       // אפשר להוסיף כאן שילוב של paymentDetails ב-newTransaction לפי הצורך
-      this.transactionAdded.emit({ ...this.newTransaction });
+      this.transactionAdded.emit({ ...this.newTransaction,...this.paymentDetails });
       this.resetForm();
     }
   }
