@@ -33,7 +33,7 @@ import { TransactionsTableComponent } from '../components/transactions-table/tra
           <app-header [totalTransactions]="transactions.length"></app-header>
 
           <div class="page-header">
-            <h1 class="page-title">ניהול הנהלת חשבונות</h1>
+            <h1 class="page-title">לוח בקרה כספי</h1>
             <p class="page-description">ניהול ומעקב אחר הכנסות והוצאות עסקיות</p>
           </div>
 
@@ -78,7 +78,8 @@ import { TransactionsTableComponent } from '../components/transactions-table/tra
 
     .page-header {
       margin-bottom: 2rem;
-      text-align: center;
+      margin-top: 2rem;
+      text-align: right;
     }
 
     .page-title {

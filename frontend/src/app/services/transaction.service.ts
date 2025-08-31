@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import * as XLSX from 'xlsx';
 
@@ -29,8 +30,56 @@ export class TransactionService {
   private notificationsSubject = new BehaviorSubject<NotificationMessage[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
 
-  constructor() {
+  // URL של השרת
+  private baseUrl = 'http://localhost:3001/api';
+
+  constructor(private http: HttpClient) {
     this.loadSavedData();
+    this.testServerConnection();
+  }
+
+  // בדיקת חיבור לשרת
+  private testServerConnection(): void {
+    this.http.get('http://localhost:3001').subscribe({
+      next: (response) => {
+        console.log('חיבור לשרת הצליח:', response);
+      },
+      error: (error) => {
+        console.error('שגיאה בחיבור לשרת:', error);
+      }
+    });
+  }
+
+  // API Methods - חיבור לשרת
+  
+  // קבלת לקוחות מהשרת
+  getCustomers(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/customers`);
+  }
+
+  // יצירת לקוח חדש
+  createCustomer(customerData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customers`, customerData);
+  }
+
+  // קבלת הכנסות מהשרת
+  getIncomes(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/income`);
+  }
+
+  // יצירת הכנסה חדשה
+  createIncome(incomeData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/income`, incomeData);
+  }
+
+  // קבלת הוצאות מהשרת
+  getExpenses(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/expenses`);
+  }
+
+  // יצירת הוצאה חדשה
+  createExpense(expenseData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/expenses`, expenseData);
   }
 
   // Transaction methods
@@ -38,7 +87,7 @@ export class TransactionService {
     return this.transactionsSubject.value;
   }
 
-  addTransaction(transaction: Omit<Transaction, 'id'>): boolean {
+  addTransaction(transaction: Omit<Transaction, 'id'>, showNotification: boolean = true): boolean {
     const newTransaction = {
       ...transaction,
       id: this.generateId()
@@ -49,10 +98,14 @@ export class TransactionService {
       const updatedTransactions = [...currentTransactions, newTransaction];
       this.transactionsSubject.next(updatedTransactions);
       this.saveData();
-      this.showNotification('העסקה נוספה בהצלחה!', 'success');
+      if (showNotification) {
+        this.showNotification('העסקה נוספה בהצלחה!', 'success');
+      }
       return true;
     } else {
-      this.showNotification('עסקה זהה כבר קיימת במערכת', 'error');
+      if (showNotification) {
+        this.showNotification('עסקה זהה כבר קיימת במערכת', 'error');
+      }
       return false;
     }
   }
@@ -73,19 +126,37 @@ export class TransactionService {
   addTransactionsFromFile(transactions: Transaction[]): void {
     const currentTransactions = this.transactionsSubject.value;
     let addedCount = 0;
+    let duplicateCount = 0;
+    const newTransactions = [...currentTransactions];
 
     transactions.forEach(transaction => {
-      if (!this.isDuplicate(transaction)) {
-        currentTransactions.push(transaction);
+      const newTransaction = {
+        ...transaction,
+        id: this.generateId()
+      };
+      
+      // בדיקת כפילות מול הרשימה הנוכחית (כולל מה שכבר נוסף)
+      if (!this.isDuplicate(newTransaction, newTransactions)) {
+        newTransactions.push(newTransaction);
         addedCount++;
+      } else {
+        duplicateCount++;
       }
     });
 
-    this.transactionsSubject.next([...currentTransactions]);
+    // עדכון הנתונים פעם אחת בלבד
+    this.transactionsSubject.next(newTransactions);
     this.saveData();
     
-    if (addedCount > 0) {
-      this.showNotification(`נוספו ${addedCount} עסקאות חדשות`, 'success');
+    // הצגת התראה אחת עם סיכום
+    if (addedCount > 0 && duplicateCount > 0) {
+      this.showNotification(`נוספו ${addedCount} עסקאות חדשות, ${duplicateCount} עסקאות כפולות לא נוספו`, 'success');
+    } else if (addedCount > 0) {
+      this.showNotification(`נוספו ${addedCount} עסקאות חדשות !`, 'success');
+    } else if (duplicateCount > 0) {
+      this.showNotification(`כל ${duplicateCount} העסקאות כבר קיימות במערכת`, 'info');
+    } else {
+      this.showNotification('לא נמצאו עסקאות תקינות לייבוא', 'error');
     }
   }
 
@@ -135,7 +206,7 @@ export class TransactionService {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'עסקאות');
     const fileName = `transactions_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
-    this.showNotification(`הקובץ ${fileName} יוצא בהצלחה!`, 'success');
+    this.showNotification(`הקובץ ${fileName} יוצא !`, 'success');
   }
 
   // Notification methods
@@ -170,8 +241,9 @@ export class TransactionService {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
   }
 
-  private isDuplicate(newTransaction: Transaction): boolean {
-    return this.transactionsSubject.value.some(t => 
+  private isDuplicate(newTransaction: Transaction, existingTransactions?: Transaction[]): boolean {
+    const transactionsToCheck = existingTransactions || this.transactionsSubject.value;
+    return transactionsToCheck.some(t => 
       t.date === newTransaction.date &&
       t.description === newTransaction.description &&
       t.amount === newTransaction.amount &&
