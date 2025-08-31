@@ -1,0 +1,109 @@
+<section class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <svg class="card-icon" width="20" height="10" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+            העלאת קבצים
+        </h3>
+    </div>
+    <div>
+        <div class="card-body">
+            <!-- Upload Area  -->
+            <div class="upload-area1" [class.drag-over1]="isDragOverIncome" (dragover)="onDragOver($event, 'income')"
+                (dragleave)="onDragLeave($event, 'income')" (drop)="onDrop($event, 'income')" (click)="triggerFileInput('income')">
+                <input #incomeFileInput type="file" accept=".xlsx,.xls" (change)="onFileSelected($event, 'income')" class="file-input">
+                <div class="upload-content">
+                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                    <h4>העלה קובץ הכנסות</h4>
+                    <p>לחץ כאן או גרור קובץ לאזור זה</p>
+                    <small>פורמטים נתמכים: Excel (.xlsx, .xls)</small>
+                    <small>גודל מקסימלי: 5MB</small>
+                </div>
+            </div>
+
+
+            <!-- Processing State -->
+            <div *ngIf="isProcessing" class="processing-state">
+                <svg class="spinner" width="24" height="24" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                        <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416"
+                            repeatCount="indefinite" />
+                        <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416"
+                            repeatCount="indefinite" />
+                    </circle>
+                </svg>
+                <span>מעבד קובץ...</span>
+            </div>
+
+            <!-- File Format Info -->
+            <div class="file-format-info">
+                <details>
+                    <summary>פורמט קבצי הכנסות נתמך</summary>
+                    <div class="format-details">
+                        <h5>קבצי Excel (.xlsx, .xls):</h5>
+                        <p>הקובץ צריך להכיל את העמודות הבאות:</p>
+                        <code>תאריך | תיאור | סכום | אופך התשלום | לקוח</code>
+                        <h6>דוגמה:</h6>
+                        <code>
+                                2024-01-15 | מכירת מוצר | 1500 | מזומן | לקוח א'
+                    </code>
+
+                    </div>
+                </details>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Upload Area  -->
+            <div class="upload-area2" [class.drag-over2]="isDragOverExpense" (dragover)="onDragOver($event, 'expense')"
+                (dragleave)="onDragLeave($event, 'expense')" (drop)="onDrop($event, 'expense')" (click)="triggerFileInput('expense')">
+                <input #expenseFileInput type="file" accept=".xlsx,.xls" (change)="onFileSelected($event, 'expense')" class="file-input">
+                <div class="upload-content">
+                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                    <h4>העלה קובץ הוצאות</h4>
+                    <p>לחץ כאן או גרור קובץ לאזור זה</p>
+                    <small>פורמטים נתמכים: Excel (.xlsx, .xls) </small>
+                    <small>גודל מקסימלי: 5MB</small>
+                </div>
+            </div>
+
+
+            <!-- Processing State -->
+            <div *ngIf="isProcessing" class="processing-state">
+                <svg class="spinner" width="24" height="24" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                        <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416"
+                            repeatCount="indefinite" />
+                        <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416"
+                            repeatCount="indefinite" />
+                    </circle>
+                </svg>
+                <span>מעבד קובץ...</span>
+            </div>
+
+            <!-- File Format Info -->
+            <div class="file-format-info">
+                <details>
+                    <summary>פורמט קבצי הוצאות נתמך</summary>
+                    <div class="format-details">
+                        <h5>קבצי Excel (.xlsx, .xls):</h5>
+                        <p>הקובץ צריך להכיל את העמודות הבאות:</p>
+                        <code>תאריך | קטגוריה | אופן התשלום | סכום | ספק</code>
+                        <h6>דוגמה:</h6>
+                        <code>
+                                2024-01-15 | ריהוט | 1500 | מזומן | ספק א
+                    </code>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+</section>

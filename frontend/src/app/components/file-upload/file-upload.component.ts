@@ -7,314 +7,72 @@ import * as XLSX from 'xlsx';
   selector: 'app-file-upload',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <section class="card">
-      <div class="card-header">
-        <h3 class="card-title">
-          <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-          </svg>
-          העלאת קבצים
-        </h3>
-      </div>
-      <div class="card-body">
-        <!-- Upload Area -->
-        <div 
-          class="upload-area"
-          [class.drag-over]="isDragOver"
-          (dragover)="onDragOver($event)"
-          (dragleave)="onDragLeave($event)"
-          (drop)="onDrop($event)"
-          (click)="triggerFileInput()">
-          
-          <input 
-            #fileInput
-            type="file" 
-            accept=".xlsx,.xls,.json"
-            (change)="onFileSelected($event)"
-            class="file-input">
-          
-          <div class="upload-content">
-            <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-            </svg>
-            <h4>העלה קובץ נתונים</h4>
-            <p>לחץ כאן או גרור קובץ לאזור זה</p>
-            <small>פורמטים נתמכים: Excel (.xlsx, .xls) ו-JSON</small>
-            <small>גודל מקסימלי: 5MB</small>
-          </div>
-        </div>
-
-        <!-- Processing State -->
-        <div *ngIf="isProcessing" class="processing-state">
-          <svg class="spinner" width="24" height="24" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
-              <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
-              <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
-            </circle>
-          </svg>
-          <span>מעבד קובץ...</span>
-        </div>
-
-        <!-- File Format Info -->
-        <div class="file-format-info">
-          <details>
-            <summary>פורמט קבצים נתמך</summary>
-            <div class="format-details">
-              <h5>קבצי Excel (.xlsx, .xls):</h5>
-              <p>הקובץ צריך להכיל את העמודות הבאות:</p>
-              <code>תאריך | תיאור | סכום | סוג | לקוח/ספק</code>
-              
-              <h6>דוגמה:</h6>
-              <code>
-2024-01-15 | מכירת מוצר | 1500 | הכנסה | לקוח א'
-2024-01-16 | קניית חומרים | 500 | הוצאה | ספק ב'
-              </code>
-
-              <h5>קבצי JSON:</h5>
-              <p>מערך של אובייקטי עסקאות:</p>
-              <code>
-[
-  {{ '{' }}
-    "date": "2024-01-15",
-    "description": "מכירת מוצר",
-    "amount": 1500,
-    "type": "income",
-    "client": "לקוח א'"
-  {{ '}' }}
-]
-              </code>
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
-  `,
-  styles: [`
-    .card {
-      background: var(--white);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-    }
-
-    .card-header {
-      background: var(--gray-50);
-      border-bottom: 1px solid var(--border-color);
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .card-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--gray-900);
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .card-icon {
-      color: var(--gray-500);
-    }
-
-    .card-body {
-      padding: 1.5rem;
-    }
-
-    /* Upload Area */
-    .upload-area {
-      border: 2px dashed var(--border-color);
-      border-radius: var(--border-radius);
-      padding: 3rem 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: var(--transition);
-      background: var(--gray-50);
-      position: relative;
-    }
-
-    .upload-area:hover {
-      border-color: var(--accent-color);
-      background: rgba(15, 43, 119, 0.05);
-    }
-
-    .upload-area.drag-over {
-      border-color: var(--accent-color);
-      background: rgba(15, 43, 119, 0.1);
-      box-shadow: 0 0 0 3px rgba(15, 43, 119, 0.1);
-      transform: scale(1.02);
-    }
-
-    .file-input {
-      display: none;
-    }
-
-    .upload-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .upload-icon {
-      color: var(--gray-400);
-    }
-
-    .upload-content h4 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--gray-700);
-      margin: 0;
-    }
-
-    .upload-content p {
-      color: var(--gray-500);
-      margin: 0;
-    }
-
-    .upload-content small {
-      color: var(--gray-400);
-      font-size: 0.75rem;
-    }
-
-    /* Processing State */
-    .processing-state {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 1rem;
-      background: var(--gray-50);
-      border-radius: var(--border-radius);
-      margin-top: 1rem;
-      color: var(--accent-color);
-      font-weight: 500;
-    }
-
-    .spinner {
-      color: var(--accent-color);
-    }
-
-    /* File Format Info */
-    .file-format-info {
-      margin-top: 1rem;
-      text-align: right;
-    }
-
-    .file-format-info details {
-      background: var(--gray-50);
-      padding: 0.75rem;
-      border-radius: var(--border-radius);
-      border: 1px solid var(--border-color);
-    }
-
-    .file-format-info summary {
-      cursor: pointer;
-      font-weight: 500;
-      color: var(--accent-color);
-      font-size: 0.875rem;
-    }
-
-    .file-format-info summary:hover {
-      color: var(--primary-color);
-    }
-
-    .format-details {
-      margin-top: 0.75rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--border-color);
-    }
-
-    .format-details h5, .format-details h6 {
-      margin: 0.5rem 0 0.25rem 0;
-      color: var(--gray-700);
-      font-size: 0.8125rem;
-    }
-
-    .format-details p {
-      margin: 0.25rem 0;
-      font-size: 0.8125rem;
-      color: var(--gray-600);
-    }
-
-    .format-details code {
-      display: block;
-      background: var(--white);
-      padding: 0.5rem;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.75rem;
-      border: 1px solid var(--border-color);
-      direction: ltr;
-      text-align: left;
-      overflow-x: auto;
-      margin: 0.5rem 0;
-      white-space: pre-wrap;
-    }
-
-    @media (max-width: 768px) {
-      .upload-area {
-        padding: 2rem 1rem;
-      }
-
-      .upload-content h4 {
-        font-size: 1rem;
-      }
-
-      .upload-content p {
-        font-size: 0.875rem;
-      }
-    }
-  `]
+  templateUrl: './file-upload.component.html',
+  styleUrls: ['./file-upload.component.css']
 })
 export class FileUploadComponent {
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-  
-  isDragOver = false;
+  @ViewChild('incomeFileInput') incomeFileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('expenseFileInput') expenseFileInput!: ElementRef<HTMLInputElement>;
+
+  isDragOverIncome = false;
+  isDragOverExpense = false;
   isProcessing = false;
 
-  constructor(private transactionService: TransactionService) {}
+  constructor(private transactionService: TransactionService) { }
 
-  triggerFileInput(): void {
-    this.fileInput.nativeElement.click();
+  triggerFileInput(type: 'income' | 'expense'): void {
+    if (type === 'income') {
+      this.incomeFileInput.nativeElement.click();
+    } else {
+      this.expenseFileInput.nativeElement.click();
+    }
   }
 
-  onDragOver(event: DragEvent): void {
+  onDragOver(event: DragEvent, type: 'income' | 'expense'): void {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragOver = true;
+    if (type === 'income') {
+      this.isDragOverIncome = true;
+    } else {
+      this.isDragOverExpense = true;
+    }
   }
 
-  onDragLeave(event: DragEvent): void {
+  onDragLeave(event: DragEvent, type: 'income' | 'expense'): void {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragOver = false;
+    if (type === 'income') {
+      this.isDragOverIncome = false;
+    } else {
+      this.isDragOverExpense = false;
+    }
   }
 
-  onDrop(event: DragEvent): void {
+  onDrop(event: DragEvent, type: 'income' | 'expense'): void {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragOver = false;
+    if (type === 'income') {
+      this.isDragOverIncome = false;
+    } else {
+      this.isDragOverExpense = false;
+    }
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      this.handleFile(files[0]);
+      this.handleFile(files[0], type);
     }
   }
 
-  onFileSelected(event: Event): void {
+  onFileSelected(event: Event, type: 'income' | 'expense'): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.handleFile(input.files[0]);
+      this.handleFile(input.files[0], type);
     }
   }
 
-  private async handleFile(file: File): Promise<void> {
+  private async handleFile(file: File, type: 'income' | 'expense'): Promise<void> {
+    // ניתן להוסיף לוגיקה שונה לפי סוג הקובץ (הכנסה/הוצאה) כאן במידת הצורך
+    // לדוג' if (type === 'income') { ... } else { ... }
     // Validate file size (5MB limit)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
@@ -326,26 +84,22 @@ export class FileUploadComponent {
     const validTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
       'application/vnd.ms-excel', // .xls
-      'application/json' // .json
     ];
 
-    const isValidType = validTypes.includes(file.type) || 
-                       file.name.endsWith('.xlsx') || 
-                       file.name.endsWith('.xls') || 
-                       file.name.endsWith('.json');
+    const isValidType = validTypes.includes(file.type) ||
+      file.name.endsWith('.xlsx') ||
+      file.name.endsWith('.xls')
 
     if (!isValidType) {
-      this.transactionService.showNotification('סוג קובץ לא נתמך. יש להעלות קבצי Excel (.xlsx, .xls) או JSON', 'error');
+      this.transactionService.showNotification('סוג קובץ לא נתמך. יש להעלות קבצי Excel (.xlsx, .xls)', 'error');
       return;
     }
 
     this.isProcessing = true;
 
     try {
-      if (file.name.endsWith('.json')) {
-        await this.processJsonFile(file);
-      } else {
-        await this.processExcelFile(file);
+      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        await this.processExcelFile(file, type);
       }
     } catch (error) {
       console.error('Error processing file:', error);
@@ -353,89 +107,74 @@ export class FileUploadComponent {
     } finally {
       this.isProcessing = false;
       // Reset file input
-      this.fileInput.nativeElement.value = '';
+      if (type === 'income') {
+        this.incomeFileInput.nativeElement.value = '';
+      } else {
+        this.expenseFileInput.nativeElement.value = '';
+      }
     }
   }
 
-  private async processJsonFile(file: File): Promise<void> {
-    const text = await file.text();
-    try {
-      const data = JSON.parse(text);
-      
-      if (!Array.isArray(data)) {
-        throw new Error('JSON must be an array of transactions');
-      }
-
-      let successCount = 0;
-      let errorCount = 0;
-
-      for (const item of data) {
-        if (this.validateTransactionData(item)) {
-          this.transactionService.addTransaction({
-            date: item.date,
-            description: item.description,
-            amount: Number(item.amount),
-            type: item.type,
-            category: item.category || '',
-            client: item.client
-          });
-          successCount++;
-        } else {
-          errorCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        this.transactionService.showNotification(`הוספו ${successCount} עסקאות בהצלחה`, 'success');
-      }
-      if (errorCount > 0) {
-        this.transactionService.showNotification(`${errorCount} עסקאות נכשלו - פורמט לא תקין`, 'error');
-      }
-    } catch (error) {
-      throw new Error('Invalid JSON format');
-    }
-  }
-
-  private async processExcelFile(file: File): Promise<void> {
+  private async processExcelFile(file: File, type: 'income' | 'expense'): Promise<void> {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
-      
-      // Convert to JSON
-      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      
-      if (data.length < 2) {
+
+      // Convert to JSON with headers as keys
+      const data = XLSX.utils.sheet_to_json(worksheet, { defval: '', raw: false });
+
+      if (data.length < 1) {
         throw new Error('קובץ ריק או חסרים נתונים');
       }
 
       let successCount = 0;
       let errorCount = 0;
 
-      // Skip header row (index 0)
-      for (let i = 1; i < data.length; i++) {
-        const row = data[i] as any[];
-        if (row.length >= 5) {
-          try {
-            const transaction = {
-              date: this.parseExcelDate(row[0]),
-              description: String(row[1] || ''),
-              amount: Number(row[2] || 0),
-              type: this.parseTransactionType(String(row[3] || '')),
-              category: '',
-              client: String(row[4] || '')
-            };
+      for (const row of data) {
+        try {
+          const r: any = row;
+          if (type === 'income') {
+            const incomeTransaction = {
+              transactionID: Number(1),
+              date: this.parseExcelDate(r['תאריך'] || r['date']),
+              client: String(r['לקוח'] || r['client'] || ''),
+              amount: Number(r['סכום'] || r['amount'] || 0),
+              VAT: Number(r['מע"מ'] || r['vat'] || 17),
+              PaymentMethod: String(r['אופן התשלום'] || r['paymentmethod'] || ''),
+              description: String(r['תיאור'] || r['description'] || ''),
 
-            if (this.validateTransactionData(transaction)) {
-              this.transactionService.addTransaction(transaction);
+            };
+            if (this.validateIncomeTransactionData(incomeTransaction)) {
+              this.addIncomeTransaction(incomeTransaction);
+              successCount++;
+            } else {
+
+              errorCount++;
+            }
+          } else if (type === 'expense') {
+            const expenseTransaction = {
+              transactionID: Number(1),
+              date: this.parseExcelDate(r['תאריך'] || r['date']),
+              supplier: String(r['ספק'] || r['supplier']),
+              category: String(r['קטגוריה'] || r['category'] || ''),
+              amount: Number(r['סכום'] || r['amount']),
+              VAT: Number(r['מע"מ'] || r['vat'] || 17),
+              PaymentMethod: String(r['אופן התשלום'] || r['paymentmethod']),
+            };
+            if (this.validateExpenseTransactionData(expenseTransaction)) {
+              this.addExpenseTransaction(expenseTransaction);
               successCount++;
             } else {
               errorCount++;
             }
-          } catch {
+          } else {
             errorCount++;
           }
+        } catch {
+
+          errorCount++;
         }
       }
 
@@ -449,6 +188,27 @@ export class FileUploadComponent {
       throw new Error('שגיאה בעיבוד קובץ Excel');
     }
   }
+
+  private addIncomeTransaction(transaction: any): void {
+    this.transactionService.addIncomeTransaction(transaction);
+    // ניתן להוסיף כאן לוגיקה נוספת להוספת הכנסה בלבד
+  }
+
+  private addExpenseTransaction(transaction: any): void {
+    this.transactionService.addExpenseTransaction(transaction);
+    // ניתן להוסיף כאן לוגיקה נוספת להוספת הוצאה בלבד
+  }
+
+  //     if (successCount > 0) {
+  //       this.transactionService.showNotification(`הוספו ${successCount} עסקאות מקובץ Excel`, 'success');
+  //     }
+  //     if (errorCount > 0) {
+  //       this.transactionService.showNotification(`${errorCount} שורות נכשלו - בדוק פורמט הנתונים`, 'error');
+  //     }
+  //   } catch (error) {
+  //     throw new Error('שגיאה בעיבוד קובץ Excel');
+  //   }
+  // }
 
   private parseExcelDate(value: any): string {
     if (typeof value === 'number') {
@@ -465,20 +225,43 @@ export class FileUploadComponent {
     return new Date().toISOString().split('T')[0]; // Default to today
   }
 
-  private parseTransactionType(value: string): 'income' | 'expense' {
-    const normalized = value.toLowerCase().trim();
-    if (normalized.includes('הכנסה') || normalized === 'income') {
-      return 'income';
-    }
-    return 'expense';
+  // private parseTransactionType(value: string): 'income' | 'expense' {
+  //   const normalized = value.toLowerCase().trim();
+  //   if (normalized.includes('הכנסה') || normalized === 'income') {
+  //     return 'income';
+  //   }
+  //   return 'expense';
+  // }
+
+  private validateIncomeTransactionData(item: any): boolean {
+    // בדיקת שדות חובה להכנסה
+    if (!item) return false;
+    if (typeof item.date !== 'string' || !item.date.trim()) return false;
+    if (typeof item.client !== 'string' || !item.client.trim()) return false;
+    if (typeof item.amount !== 'number' || isNaN(item.amount)) return false;
+    if (typeof item.VAT !== 'number' || isNaN(item.VAT)) return false;
+    if (typeof item.PaymentMethod !== 'string' || !item.PaymentMethod.trim()) return false;
+    if (typeof item.description !== 'string' || !item.description.trim()) return false;
+    return true;
+  }
+  private validateExpenseTransactionData(item: any): boolean {
+    // בדיקת שדות חובה להוצאה
+    if (!item) return false;
+    console.log("1");
+    if (typeof item.date !== 'string' || !item.date.trim()) return false;
+    console.log("2");
+    if (typeof item.supplier !== 'string' || !item.supplier.trim()) return false;
+    console.log("3");
+    if (typeof item.category !== 'string') return false;
+    console.log("4");
+    if (typeof item.amount !== 'number' || isNaN(item.amount)) return false;
+    console.log("5");
+    if (typeof item.VAT !== 'number' || isNaN(item.VAT)) return false;
+    console.log("6");
+    if (typeof item.PaymentMethod !== 'string' || !item.PaymentMethod.trim()) return false;
+    console.log("7");
+    // description לא חובה להוצאה, אם תרצה להוסיף: typeof item.description === 'string' && item.description.trim() !== ''
+    return true;
   }
 
-  private validateTransactionData(item: any): boolean {
-    return item && 
-           typeof item.date === 'string' && item.date.trim() !== '' &&
-           typeof item.description === 'string' && item.description.trim() !== '' &&
-           (typeof item.amount === 'number' || !isNaN(Number(item.amount))) &&
-           ['income', 'expense'].includes(item.type) &&
-           typeof item.client === 'string' && item.client.trim() !== '';
-  }
 }
