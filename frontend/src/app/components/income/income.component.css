@@ -192,36 +192,78 @@
 }
 
 .payment-details {
-  background: linear-gradient(135deg, var(--gray-50) 0%, #f8f9ff 100%);
-  border: 1px solid var(--border-color);
+  background: var(--white);
+  border: 2px solid #d1d5db;
   padding: 1.5rem;
-  border-radius: var(--border-radius-lg);
-  margin-top: 1rem;
-  box-shadow: 0 2px 8px rgba(15, 43, 119, 0.05);
+  border-radius: 4px;
+  margin-top: 0;
+  box-shadow: none;
+  width: 100%;
+  overflow: hidden;
 }
 
 .payment-details h4 {
-  margin: 0 0 1.5rem 0;
-  color: var(--primary-color);
+  margin: 0 0 1rem 0;
+  color: #374151;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .payment-details h4::before {
-  content: '';
-  width: 4px;
-  height: 20px;
-  background: var(--primary-color);
-  border-radius: 2px;
+  display: none;
 }
 
 .payment-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  padding-bottom: 0.5rem;
+}
+
+.payment-grid .form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.payment-grid .form-group label {
+  margin-bottom: 0.25rem;
+  margin-right: 0;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.payment-grid .form-group input,
+.payment-grid .form-group select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #9ca3af;
+  border-radius: 2px;
+  font-size: 0.875rem;
+  background: var(--white);
+  color: #374151;
+  transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.payment-grid .form-group input:focus,
+.payment-grid .form-group select:focus {
+  outline: none;
+  border-color: #6b7280;
+  box-shadow: none;
 }
 
 .form-actions {
@@ -758,13 +800,13 @@
 
 /* פרטי אופן תשלום */
 .payment-details {
-  margin-top: 1.5rem;
+  margin-top: 0;
 }
 
 .payment-method-details {
   background: var(--gray-50);
   border-radius: var(--border-radius-lg);
-  padding: 1.5rem;
+  /* padding: 1.5rem; */
   border: 1px solid var(--border-color);
 }
 
