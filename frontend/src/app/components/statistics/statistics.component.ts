@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-statistics',
@@ -7,7 +8,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="stats-row">
-      <div class="stat-card stat-card--income">
+      <div class="stat-card stat-card--income clickable" (click)="navigateToIncome()">
         <div class="stat-card__content">
           <div class="stat-card__header">
             <span class="stat-card__icon">
@@ -18,6 +19,7 @@ import { CommonModule } from '@angular/common';
             <span class="stat-card__title">הכנסות</span>
           </div>
           <div class="stat-card__value">{{totalIncome | number:'1.2-2'}} ₪</div>
+          <div class="stat-card__action">לחץ לניהול הכנסות</div>
         </div>
       </div>
 
@@ -65,6 +67,16 @@ import { CommonModule } from '@angular/common';
       padding: 1.5rem;
       box-shadow: var(--shadow-sm);
       transition: var(--transition);
+    }
+
+    .stat-card.clickable {
+      cursor: pointer;
+    }
+
+    .stat-card.clickable:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--success-color);
     }
 
     .stat-card:hover {
@@ -136,6 +148,19 @@ import { CommonModule } from '@angular/common';
       line-height: 1;
     }
 
+    .stat-card__action {
+      font-size: 0.8rem;
+      color: var(--success-color);
+      font-weight: 500;
+      margin-top: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .stat-card.clickable:hover .stat-card__action {
+      opacity: 1;
+    }
+
     @media (max-width: 768px) {
       .stats-row {
         grid-template-columns: 1fr;
@@ -153,4 +178,10 @@ export class StatisticsComponent {
   @Input() totalIncome: number = 0;
   @Input() totalExpenses: number = 0;
   @Input() netProfit: number = 0;
+
+  constructor(private router: Router) {}
+
+  navigateToIncome(): void {
+    this.router.navigate(['/income']);
+  }
 }

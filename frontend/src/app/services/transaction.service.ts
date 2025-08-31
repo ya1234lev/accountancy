@@ -1,6 +1,7 @@
 // Transaction type for union of income/expense
 export type Transaction = (IncomeTransaction & { type: 'income' }) | (ExpenseTransaction & { type: 'expense' });
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import * as XLSX from 'xlsx';
 
@@ -42,8 +43,56 @@ export class TransactionService {
   private notificationsSubject = new BehaviorSubject<NotificationMessage[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
 
-  constructor() {
+  // URL של השרת
+  private baseUrl = 'http://localhost:3001/api';
+
+  constructor(private http: HttpClient) {
     this.loadSavedData();
+    this.testServerConnection();
+  }
+
+  // בדיקת חיבור לשרת
+  private testServerConnection(): void {
+    this.http.get('http://localhost:3001').subscribe({
+      next: (response) => {
+        console.log('חיבור לשרת הצליח:', response);
+      },
+      error: (error) => {
+        console.error('שגיאה בחיבור לשרת:', error);
+      }
+    });
+  }
+
+  // API Methods - חיבור לשרת
+  
+  // קבלת לקוחות מהשרת
+  getCustomers(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/customers`);
+  }
+
+  // יצירת לקוח חדש
+  createCustomer(customerData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customers`, customerData);
+  }
+
+  // קבלת הכנסות מהשרת
+  getIncomes(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/income`);
+  }
+
+  // יצירת הכנסה חדשה
+  createIncome(incomeData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/income`, incomeData);
+  }
+
+  // קבלת הוצאות מהשרת
+  getExpenses(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/expenses`);
+  }
+
+  // יצירת הוצאה חדשה
+  createExpense(expenseData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/expenses`, expenseData);
   }
 
   // Transaction methods
@@ -105,15 +154,20 @@ export class TransactionService {
   addTransactionsFromFile(transactions: Transaction[]): void {
     const currentTransactions = this.transactionsSubject.value;
     let addedCount = 0;
+    let duplicateCount = 0;
+    const newTransactions = [...currentTransactions];
 
     transactions.forEach(transaction => {
       if (!this.isDuplicate(transaction)) {
         currentTransactions.push(transaction);
         addedCount++;
+      } else {
+        duplicateCount++;
       }
     });
 
-    this.transactionsSubject.next([...currentTransactions]);
+    // עדכון הנתונים פעם אחת בלבד
+    this.transactionsSubject.next(newTransactions);
     this.saveData();
 
     if (addedCount > 0) {
@@ -167,7 +221,7 @@ export class TransactionService {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'עסקאות');
     const fileName = `transactions_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
-    this.showNotification(`הקובץ ${fileName} יוצא בהצלחה!`, 'success');
+    this.showNotification(`הקובץ ${fileName} יוצא !`, 'success');
   }
 
   // Notification methods
