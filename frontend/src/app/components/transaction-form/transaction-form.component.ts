@@ -10,10 +10,14 @@ import { Transaction } from '../../services/transaction.service';
   styleUrls: ['./transaction-form.component.css']
 })
 export class TransactionFormComponent {
+  showForm = false;
+
   errorMessage: string = '';
   // ...existing code...
+  
   onDueDateChange(): void {
     this.errorMessage = '';
+    
     if (this.paymentDetails.dueDate && this.newTransaction.date) {
       const due = new Date(this.paymentDetails.dueDate);
       const tx = new Date(this.newTransaction.date);
@@ -31,23 +35,57 @@ export class TransactionFormComponent {
   paymentMethod: string = 'cash';
   paymentDetails: any = {};
 
-  newTransaction: Omit<Transaction, 'id'> = {
+  newTransaction: any = {
     date: '',
     description: '',
     amount: 0,
     type: 'income',
     category: '',
-    client: ''
+    client: '',
+    supplier: '',
+    VAT: 0,
+    PaymentMethod: ''
   };
 
   onSubmit(): void {
-
-    console.log("paymentDetails",this.paymentDetails.amount);
-    console.log("newTransaction",this.newTransaction);
+    // בדיקה בסיסית
     
-    if (this.newTransaction.date && this.paymentDetails.amount && this.newTransaction.client) {
-      // אפשר להוסיף כאן שילוב של paymentDetails ב-newTransaction לפי הצורך
-      this.transactionAdded.emit({ ...this.newTransaction,...this.paymentDetails });
+    if (!this.newTransaction.date || !this.paymentDetails.amount) {
+      console.log("ccc");
+      this.errorMessage = 'יש למלא את כל השדות החובה';
+      return;
+    }
+    if (this.newTransaction.type === 'income') {
+      if (!this.newTransaction.client) {
+        this.errorMessage = 'יש לבחור לקוח';
+        return;
+      }
+      const tx = {
+        ...this.newTransaction,
+        ...this.paymentDetails,
+        supplier: undefined, // לא רלוונטי להכנסה
+        category: undefined  // לא רלוונטי להכנסה
+      };
+
+      this.transactionAdded.emit(tx);
+      this.resetForm();
+    } else if (this.newTransaction.type === 'expense') {
+      console.log("this.newTransaction",this.newTransaction);
+      
+      if (!this.newTransaction.supplier) {
+        this.errorMessage = 'יש לבחור ספק';
+        return;
+      }
+      if (!this.newTransaction.category) {
+        this.errorMessage = 'יש לבחור קטגוריה';
+        return;
+      }
+      const tx = {
+        ...this.newTransaction,
+        ...this.paymentDetails,
+        client: undefined // לא רלוונטי להוצאה
+      };
+      this.transactionAdded.emit(tx);
       this.resetForm();
     }
   }
@@ -59,9 +97,13 @@ export class TransactionFormComponent {
       amount: 0,
       type: 'income',
       category: '',
-      client: ''
+      client: '',
+      supplier: '',
+      VAT: 0,
+      PaymentMethod: ''
     };
     this.paymentMethod = 'cash';
     this.paymentDetails = {};
+    this.errorMessage = '';
   }
 }
