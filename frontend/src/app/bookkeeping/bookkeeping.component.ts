@@ -129,7 +129,11 @@ export class BookkeepingComponent implements OnInit, OnDestroy {
   }
 
   onTransactionAdded(transaction: Omit<Transaction, 'id'>) {
-    this.transactionService.addTransaction(transaction);
+    if (transaction.type === 'income') {
+      this.transactionService.addIncomeTransaction(transaction as any);
+    } else if (transaction.type === 'expense') {
+      this.transactionService.addExpenseTransaction(transaction as any);
+    }
   }
 
   private updateStatistics() {
