@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { TransactionService, Transaction } from '../../services/transaction.service';
+import { TransactionService, ExpenseTransaction,IncomeTransaction } from '../../services/transaction.service';
 
 @Component({
   selector: 'app-transactions-table',
@@ -11,7 +11,7 @@ import { TransactionService, Transaction } from '../../services/transaction.serv
   styleUrls: ['./transactions-table.component.css']
 })
 export class TransactionsTableComponent implements OnInit, OnDestroy {
-  transactions: Transaction[] = [];
+  transactions: any[] = [];
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   private destroy$ = new Subject<void>();
@@ -41,7 +41,7 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
     this.transactions = this.getSorted(this.transactions);
   }
 
-  getSorted(transactions: Transaction[]): Transaction[] {
+  getSorted(transactions: any[]): any[] {
     if (!this.sortColumn) return [...transactions];
     return [...transactions].sort((a, b) => {
       let aVal = (a as any)[this.sortColumn];

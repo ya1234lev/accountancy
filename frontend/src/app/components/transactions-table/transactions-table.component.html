@@ -74,7 +74,7 @@
                 {{transaction.type === 'income' ? 'הכנסה' : 'הוצאה'}}
               </span>
             </td>
-            <td class="cell--client">{{transaction.client}}</td>
+            <td class="cell--client">{{transaction.client || transaction.supplier}}</td>
             <td class="cell--actions">
               <button 
                 (click)="deleteTransaction(i)" 
