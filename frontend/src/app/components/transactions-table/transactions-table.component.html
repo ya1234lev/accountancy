@@ -34,7 +34,7 @@
               </span>
             </th>
             <th (click)="sortBy('description')" style="cursor:pointer">
-              תיאור
+              תיאור/קטגוריה
               <span class="sort-arrow" [class.active-arrow]="sortColumn === 'description'" [class.asc]="sortColumn === 'description' && sortDirection === 'asc'" [class.desc]="sortColumn === 'description' && sortDirection === 'desc'">
                 {{sortColumn === 'description' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
@@ -65,7 +65,7 @@
               [class.row--income]="transaction.type === 'income'"
               [class.row--expense]="transaction.type === 'expense'">
             <td class="cell--date">{{transaction.date | date:'dd/MM/yyyy'}}</td>
-            <td class="cell--description">{{transaction.description}}</td>
+            <td class="cell--description">{{transaction.description || transaction.category}}</td>
             <td class="cell--amount" [class]="'amount--' + transaction.type">
               {{transaction.amount | number:'1.2-2'}} ₪
             </td>
