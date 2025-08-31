@@ -1,0 +1,624 @@
+<!-- מערכת הודעות -->
+<div class="notifications-container">
+  <div *ngFor="let notification of notifications" 
+       class="notification" 
+       [class]="'notification--' + notification.type"
+       [class.notification--visible]="notification.visible"
+       (click)="removeNotification(notification.id)">
+    <div class="notification-content">
+      <svg class="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path *ngIf="notification.type === 'success'" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        <path *ngIf="notification.type === 'error'" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+        <path *ngIf="notification.type === 'info'" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10A1,1 0 0,1 11,9V7A1,1 0 0,1 12,6A1,1 0 0,1 13,7V9A1,1 0 0,1 12,10Z"/>
+      </svg>
+      <span class="notification-message">{{notification.message}}</span>
+      <button class="notification-close" (click)="removeNotification(notification.id); $event.stopPropagation()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- כפתור חזרה קבוע -->
+  <button class="back-button-fixed" (click)="navigateToHome()" title="חזרה לעמוד הראשי">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+    </svg>
+  </button>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <h1 class="app-title">
+          <svg class="app-icon" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z"/>
+          </svg>
+          מערכת הכנסות - הנהלת חשבונות
+        </h1>
+        <nav class="nav-menu">
+          <button class="nav-button" [class.active]="currentTab === 'newReceipt'" (click)="setCurrentTab('newReceipt')">
+            קבלה חדשה
+          </button>
+          <button class="nav-button" [class.active]="currentTab === 'receipts'" (click)="setCurrentTab('receipts')">
+            רשימת קבלות
+          </button>
+          <button class="nav-button" [class.active]="currentTab === 'clients'" (click)="setCurrentTab('clients')">
+            לקוחות
+          </button>
+          <button class="nav-button" [class.active]="currentTab === 'settings'" (click)="setCurrentTab('settings')">
+            הגדרות
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      
+      <!-- קבלה חדשה -->
+      <div *ngIf="currentTab === 'newReceipt'" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">קבלה חדשה</h2>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="saveReceipt()" #receiptForm="ngForm">
+              <div class="form-grid">
+                
+                <!-- מספר קבלה -->
+                <div class="form-group">
+                  <label for="receiptNumber">מספר קבלה</label>
+                  <input type="text" id="receiptNumber" 
+                         [(ngModel)]="newReceipt.receiptNumber" 
+                         name="receiptNumber" required>
+                </div>
+
+                <!-- תאריך -->
+                <div class="form-group">
+                  <label for="date">תאריך</label>
+                  <input type="date" id="date" 
+                         [(ngModel)]="newReceipt.date" 
+                         name="date" required>
+                </div>
+
+                <!-- לקוח -->
+                <div class="form-group">
+                  <label for="client">לקוח</label>
+                  <div class="client-select-wrapper">
+                    <select id="client" [(ngModel)]="newReceipt.clientId" 
+                            name="client" required (change)="onClientChange()">
+                      <option value="">בחר לקוח</option>
+                      <option *ngFor="let client of clients" [value]="client.id">
+                        {{client.name}}
+                      </option>
+                      <option value="new">+ לקוח חדש</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- סכום -->
+                <div class="form-group">
+                  <label for="amount">סכום (ללא מע"מ)</label>
+                  <input type="number" id="amount" 
+                         [(ngModel)]="newReceipt.amount" 
+                         name="amount" step="0.01" required
+                         (input)="calculateTotal()">
+                </div>
+
+                <!-- מע"מ -->
+                <div class="form-group">
+                  <label for="vatRate">מע"מ</label>
+                  <select id="vatRate" 
+                          [(ngModel)]="newReceipt.vatRate" 
+                          name="vatRate" (change)="calculateTotal()">
+                    <option value="0">ללא מע"מ</option>
+                    <option value="17">17%</option>
+                  </select>
+                </div>
+
+                <!-- סך הכל -->
+                <div class="form-group">
+                  <label for="totalAmount">סך הכל</label>
+                  <input type="number" id="totalAmount" 
+                         [value]="newReceipt.totalAmount" 
+                         readonly class="readonly-input">
+                </div>
+
+                <!-- אופן תשלום -->
+                <div class="form-group full-width">
+                  <label>אופן תשלום</label>
+                  <div class="payment-methods">
+                    <label class="radio-option">
+                      <input type="radio" [(ngModel)]="newReceipt.paymentMethod" 
+                             name="paymentMethod" value="cash" (change)="updatePaymentDetails()">
+                      <span>מזומן</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" [(ngModel)]="newReceipt.paymentMethod" 
+                             name="paymentMethod" value="credit" (change)="updatePaymentDetails()">
+                      <span>אשראי</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" [(ngModel)]="newReceipt.paymentMethod" 
+                             name="paymentMethod" value="check" (change)="updatePaymentDetails()">
+                      <span>צ'ק</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" [(ngModel)]="newReceipt.paymentMethod" 
+                             name="paymentMethod" value="transfer" (change)="updatePaymentDetails()">
+                      <span>העברה בנקאית</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- פרטי תשלום - מזומן -->
+                <div *ngIf="newReceipt.paymentMethod === 'cash'" class="payment-details full-width">
+                  <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z"/>
+                    </svg>
+                    פרטי תשלום במזומן
+                  </h4>
+                  <div class="form-group">
+                    <label for="cashAmount">סכום</label>
+                    <input type="number" id="cashAmount" 
+                           [(ngModel)]="cashDetails.amount" 
+                           name="cashAmount" step="0.01">
+                  </div>
+                </div>
+
+                <!-- פרטי תשלום - אשראי -->
+                <div *ngIf="newReceipt.paymentMethod === 'credit'" class="payment-details full-width">
+                  <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4M20,18H4V12H20V18M20,8H4V6H20V8Z"/>
+                    </svg>
+                    פרטי תשלום באשראי
+                  </h4>
+                  <div class="payment-grid">
+                   <div class="form-group">
+                      <label for="creditAmount">סכום</label>
+                      <input type="number" id="creditAmount" 
+                             [(ngModel)]="creditDetails.amount" 
+                             name="creditAmount" step="0.01">
+                    </div>
+                    <div class="form-group">
+                      <label for="lastFourDigits">4 ספרות אחרונות</label>
+                      <input type="text" id="lastFourDigits" 
+                             [(ngModel)]="creditDetails.lastFourDigits" 
+                             name="lastFourDigits" maxlength="4" pattern="[0-9]{4}">
+                    </div>
+                   
+                    <div class="form-group">
+                      <label for="installments">מספר תשלומים</label>
+                      <input type="number" id="installments" 
+                             [(ngModel)]="creditDetails.installments" 
+                             name="installments" min="1">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- פרטי תשלום - צ'ק -->
+                <div *ngIf="newReceipt.paymentMethod === 'check'" class="payment-details full-width">
+                  <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M2,5V19H22V5H2M20,17H4V7H20V17M6,9V11H8V9H6M6,13V15H16V13H6Z"/>
+                    </svg>
+                    פרטי תשלום בצ'ק
+                  </h4>
+                  <div class="payment-grid">
+                    <div class="form-group">
+                      <label for="checkAmount">סכום</label>
+                      <input type="number" id="checkAmount" 
+                             [(ngModel)]="checkDetails.amount" 
+                             name="checkAmount" step="0.01">
+                    </div>
+                    <div class="form-group">
+                      <label for="checkNumber">מספר צ'ק</label>
+                      <input type="text" id="checkNumber" 
+                             [(ngModel)]="checkDetails.checkNumber" 
+                             name="checkNumber">
+                    </div>
+                    <div class="form-group">
+                      <label for="accountNumber">מספר חשבון</label>
+                      <input type="text" id="accountNumber" 
+                             [(ngModel)]="checkDetails.accountNumber" 
+                             name="accountNumber">
+                    </div>
+                    <div class="form-group">
+                      <label for="bankNumber">מספר בנק</label>
+                      <input type="text" id="bankNumber" 
+                             [(ngModel)]="checkDetails.bankNumber" 
+                             name="bankNumber">
+                    </div>
+                   
+                    <div class="form-group">
+                      <label for="dueDate">תאריך פירעון</label>
+                      <input type="date" id="dueDate" 
+                             [(ngModel)]="checkDetails.dueDate" 
+                             name="dueDate">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- פרטי תשלום - העברה בנקאית -->
+                <div *ngIf="newReceipt.paymentMethod === 'transfer'" class="payment-details full-width">
+                  <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5,6H23V18H5V6M14,9A3,3 0 0,1 17,12A3,3 0 0,1 14,15A3,3 0 0,1 11,12A3,3 0 0,1 14,9M9,8A2,2 0 0,1 7,10V14A2,2 0 0,1 9,16H19A2,2 0 0,1 21,14V10A2,2 0 0,1 19,8H9Z"/>
+                    </svg>
+                    פרטי העברה בנקאית
+                  </h4>
+                  <div class="payment-grid">
+                    <div class="form-group">
+                      <label for="transferAmount">סכום</label>
+                      <input type="number" id="transferAmount" 
+                             [(ngModel)]="transferDetails.amount" 
+                             name="transferAmount" step="0.01">
+                    </div>
+                    <div class="form-group">
+                      <label for="transferAccountNumber">מספר חשבון</label>
+                      <input type="text" id="transferAccountNumber" 
+                             [(ngModel)]="transferDetails.accountNumber" 
+                             name="transferAccountNumber">
+                    </div>
+                    <div class="form-group">
+                      <label for="transferBankNumber">מספר בנק</label>
+                      <input type="text" id="transferBankNumber" 
+                             [(ngModel)]="transferDetails.bankNumber" 
+                             name="transferBankNumber">
+                    </div>
+                   
+                    <div class="form-group">
+                      <label for="transferDate">תאריך העברה</label>
+                      <input type="date" id="transferDate" 
+                             [(ngModel)]="transferDetails.transferDate" 
+                             name="transferDate">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- פרטים -->
+                <div class="form-group full-width">
+                  <label for="details">פרטים</label>
+                  <textarea id="details" [(ngModel)]="newReceipt.details" 
+                            name="details" rows="3"></textarea>
+                </div>
+
+              </div>
+
+              <!-- כפתורים -->
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" [disabled]="!receiptForm.form.valid">
+                  שמור קבלה
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="generatePDF()">
+                  הדפסה
+                </button>
+                <button type="button" class="btn btn-outline" (click)="resetForm()">
+                  נקה טופס
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- רשימת קבלות -->
+      <div *ngIf="currentTab === 'receipts'" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">רשימת קבלות</h2>
+            <div class="header-actions">
+              <input type="text" placeholder="חיפוש" 
+                     [(ngModel)]="searchTerm" class="search-input">
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>מספר קבלה</th>
+                    <th>תאריך</th>
+                    <th>לקוח</th>
+                    <th>סכום</th>
+                    <th>אופן תשלום</th>
+                    <th>פעולות</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let receipt of filteredReceipts">
+                    <td>{{receipt.receiptNumber}}</td>
+                    <td>{{receipt.date | date:'dd/MM/yyyy'}}</td>
+                    <td>{{receipt.clientName}}</td>
+                    <td>₪{{receipt.totalAmount | number:'1.2-2'}}</td>
+                    <td>
+                      {{getPaymentMethodName(receipt.paymentMethod)}}
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="btn btn-sm btn-outline" (click)="editReceipt(receipt)">
+                          עריכה
+                        </button>
+                        <button class="btn btn-sm btn-primary" (click)="downloadReceiptPDF(receipt)">
+                          הדפסה
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="filteredReceipts.length === 0" class="no-data">
+                אין קבלות להצגה
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- לקוחות -->
+      <div *ngIf="currentTab === 'clients'" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">מאגר לקוחות</h2>
+            <button class="btn btn-primary" (click)="showNewClientForm = true">
+              + לקוח חדש
+            </button>
+          </div>
+          <div class="card-body">
+            
+            <!-- טופס לקוח חדש -->
+            <div *ngIf="showNewClientForm" class="new-client-form">
+              <h3>לקוח חדש</h3>
+              <form (ngSubmit)="saveClient()" #clientForm="ngForm">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="clientName">שם לקוח</label>
+                    <input type="text" id="clientName" 
+                           [(ngModel)]="newClient.name" 
+                           name="clientName" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="clientPhone">טלפון</label>
+                    <input type="tel" id="clientPhone" 
+                           [(ngModel)]="newClient.phone" 
+                           name="clientPhone">
+                  </div>
+                  <div class="form-group">
+                    <label for="clientEmail">אימייל</label>
+                    <input type="email" id="clientEmail" 
+                           [(ngModel)]="newClient.email" 
+                           name="clientEmail">
+                  </div>
+                  <div class="form-group full-width">
+                    <label for="clientAddress">כתובת</label>
+                    <textarea id="clientAddress" [(ngModel)]="newClient.address" 
+                              name="clientAddress" rows="2"></textarea>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" [disabled]="!clientForm.form.valid">
+                    שמור לקוח
+                  </button>
+                  <button type="button" class="btn btn-outline" (click)="showNewClientForm = false">
+                    ביטול
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- רשימת לקוחות -->
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>שם</th>
+                    <th>טלפון</th>
+                    <th>אימייל</th>
+                    <th>כתובת</th>
+                    <th>פעולות</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let client of clients">
+                    <td>{{client.name}}</td>
+                    <td>{{client.phone}}</td>
+                    <td>{{client.email}}</td>
+                    <td>{{client.address}}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline" (click)="editClient(client)">
+                        עריכה
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="clients.length === 0" class="no-data">
+                אין לקוחות במאגר
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- הגדרות -->
+      <div *ngIf="currentTab === 'settings'" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">הגדרות מערכת</h2>
+          </div>
+          <div class="card-body">
+            <div class="settings-section">
+              <h3>הגדרות מע"מ</h3>
+              <div class="form-group">
+                <label for="defaultVatRate">אחוז מע"מ ברירת מחדל</label>
+                <input type="number" id="defaultVatRate" 
+                       [(ngModel)]="settings.defaultVatRate" 
+                       step="0.01" (change)="saveSettings()">
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>הגדרות קבלות</h3>
+              <div class="form-group">
+                <label for="receiptPrefix">קידומת מספר קבלה</label>
+                <input type="text" id="receiptPrefix" 
+                       [(ngModel)]="settings.receiptPrefix" 
+                       (change)="saveSettings()">
+              </div>
+              <div class="form-group">
+                <label for="nextReceiptNumber">מספר קבלה הבא</label>
+                <input type="number" id="nextReceiptNumber" 
+                       [(ngModel)]="settings.nextReceiptNumber" 
+                       (change)="saveSettings()">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- מודל לקוח חדש -->
+<div *ngIf="showNewClientModal" class="modal-overlay" (click)="closeNewClientModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>לקוח חדש</h3>
+      <button class="modal-close" (click)="closeNewClientModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="saveNewClientFromModal()" #modalClientForm="ngForm">
+        <div class="form-group">
+          <label for="modalClientName">שם לקוח</label>
+          <input type="text" id="modalClientName" 
+                 [(ngModel)]="modalNewClient.name" 
+                 name="modalClientName" required>
+        </div>
+        <div class="form-group">
+          <label for="modalClientPhone">טלפון</label>
+          <input type="tel" id="modalClientPhone" 
+                 [(ngModel)]="modalNewClient.phone" 
+                 name="modalClientPhone">
+        </div>
+        <div class="form-group">
+          <label for="modalClientEmail">אימייל</label>
+          <input type="email" id="modalClientEmail" 
+                 [(ngModel)]="modalNewClient.email" 
+                 name="modalClientEmail">
+        </div>
+        <div class="form-group">
+          <label for="modalClientAddress">כתובת</label>
+          <textarea id="modalClientAddress" [(ngModel)]="modalNewClient.address" 
+                    name="modalClientAddress" rows="2"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!modalClientForm.form.valid">
+            שמור לקוח
+          </button>
+          <button type="button" class="btn btn-outline" (click)="closeNewClientModal()">
+            ביטול
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- תבנית PDF מוסתרת -->
+<div #receiptTemplate id="receipt-template" class="receipt-template" style="display: none;">
+  <div class="receipt-content">
+    <div class="receipt-header">
+      <h1>קבלה</h1>
+      <div class="receipt-number">מספר: {{currentReceiptForPDF?.receiptNumber}}</div>
+    </div>
+    
+    <div class="receipt-details">
+      <div class="detail-row">
+        <span class="label">תאריך:</span>
+        <span class="value">{{currentReceiptForPDF?.date | date:'dd/MM/yyyy'}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">לקוח:</span>
+        <span class="value">{{currentReceiptForPDF?.clientName}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">סכום:</span>
+        <span class="value">₪{{currentReceiptForPDF?.amount | number:'1.2-2'}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">מע"מ ({{currentReceiptForPDF?.vatRate}}%):</span>
+        <span class="value">₪{{currentReceiptForPDF?.vatAmount | number:'1.2-2'}}</span>
+      </div>
+      <div class="detail-row total-row">
+        <span class="label">סך הכל:</span>
+        <span class="value">₪{{currentReceiptForPDF?.totalAmount | number:'1.2-2'}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">אופן תשלום:</span>
+        <span class="value">{{getPaymentMethodName(currentReceiptForPDF?.paymentMethod || '')}}</span>
+      </div>
+      
+      <!-- פרטי תשלום נוספים -->
+      <div *ngIf="currentReceiptForPDF?.paymentMethod === 'credit' && currentReceiptForPDF?.creditDetails" class="payment-details-section">
+        <h4>פרטי אשראי</h4>
+        <div class="detail-row">
+          <span class="label">4 ספרות אחרונות:</span>
+          <span class="value">****{{currentReceiptForPDF?.creditDetails?.lastFourDigits}}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">מספר תשלומים:</span>
+          <span class="value">{{currentReceiptForPDF?.creditDetails?.installments}}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="currentReceiptForPDF?.paymentMethod === 'check' && currentReceiptForPDF?.checkDetails" class="payment-details-section">
+        <h4>פרטי צ'ק</h4>
+        <div class="detail-row">
+          <span class="label">מספר צ'ק:</span>
+          <span class="value">{{currentReceiptForPDF?.checkDetails?.checkNumber}}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">בנק:</span>
+          <span class="value">{{currentReceiptForPDF?.checkDetails?.bankNumber}}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">תאריך פירעון:</span>
+          <span class="value">{{currentReceiptForPDF?.checkDetails?.dueDate | date:'dd/MM/yyyy'}}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="currentReceiptForPDF?.paymentMethod === 'transfer' && currentReceiptForPDF?.transferDetails" class="payment-details-section">
+        <h4>פרטי העברה בנקאית</h4>
+        <div class="detail-row">
+          <span class="label">בנק:</span>
+          <span class="value">{{currentReceiptForPDF?.transferDetails?.bankNumber}}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">תאריך העברה:</span>
+          <span class="value">{{currentReceiptForPDF?.transferDetails?.transferDate | date:'dd/MM/yyyy'}}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="currentReceiptForPDF?.details" class="detail-row">
+        <span class="label">פרטים:</span>
+        <span class="value">{{currentReceiptForPDF?.details}}</span>
+      </div>
+    </div>
+    
+    <div class="receipt-footer">
+      <div class="print-date">תאריך הדפסה: {{currentReceiptForPDF?.printDate | date:'dd/MM/yyyy HH:mm'}}</div>
+      <div class="company-info">
+        <div>מערכת הנהלת חשבונות</div>
+      </div>
+    </div>
+  </div>
+</div>
