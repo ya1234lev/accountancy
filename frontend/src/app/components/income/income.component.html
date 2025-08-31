@@ -274,14 +274,24 @@
 
               <!-- כפתורים -->
               <div class="form-actions">
-                <button type="submit" class="btn btn-primary" [disabled]="!receiptForm.form.valid">
-                  שמור קבלה
+                
+                <button type="button" class="btn btn-outline" (click)="resetForm()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                  </svg>
+                  נקה טופס
                 </button>
-                <button type="button" class="btn btn-secondary" (click)="generatePDF()">
+                <button type="button" class="btn btn-primary" (click)="generatePDF()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                  </svg>
                   הדפסה
                 </button>
-                <button type="button" class="btn btn-outline" (click)="resetForm()">
-                  נקה טופס
+                <button type="submit" class="btn btn-primary" [disabled]="!receiptForm.form.valid">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                  </svg>
+                  שמור קבלה
                 </button>
               </div>
             </form>
