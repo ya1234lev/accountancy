@@ -61,7 +61,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let transaction of transactions; let i = index" 
+          <tr *ngFor="let transaction of displayedTransactions; let i = index" 
               [class.row--income]="transaction.type === 'income'"
               [class.row--expense]="transaction.type === 'expense'">
             <td class="cell--date">{{transaction.date | date:'dd/MM/yyyy'}}</td>
@@ -89,7 +89,7 @@
         </tbody>
       </table>
     </div>
-    
+
     <div *ngIf="transactions.length === 0" class="empty-state">
       <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
         <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z"/>
@@ -99,3 +99,26 @@
     </div>
   </div>
 </section>
+
+<!-- Load More/Show Less Buttons - Completely separate from card -->
+<div class="show-more-section" *ngIf="transactions.length > INITIAL_DISPLAY_COUNT">
+  <div class="pagination-controls">
+    <button (click)="loadMore()" class="show-more-btn" *ngIf="hasMoreToShow">
+       הצג עוד
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7,10L12,15L17,10H7Z"/>
+      </svg>
+    </button>
+    
+    <button (click)="showLess()" class="show-less-btn" *ngIf="canShowLess && !hasMoreToShow">
+      הצג פחות
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7,14L12,9L17,14H7Z"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div class="pagination-info" *ngIf="transactions.length > INITIAL_DISPLAY_COUNT">
+    מציג {{displayedTransactions.length}} מתוך {{transactions.length}} עסקאות
+  </div>
+</div>
