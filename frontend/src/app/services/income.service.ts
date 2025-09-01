@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 export interface Client {
   id: string;
@@ -37,143 +38,59 @@ export interface Income {
   updatedAt?: string;
 }
 
+
 @Injectable({
   providedIn: 'root'
 })
 export class IncomeService {
-  private incomesSubject = new BehaviorSubject<Income[]>([]);
-  private clientsSubject = new BehaviorSubject<Client[]>([]);
-  
-  public incomes$ = this.incomesSubject.asObservable();
-  public clients$ = this.clientsSubject.asObservable();
+  private apiUrl = 'http://localhost:3000/api/incomes';
+  private clientsUrl = 'http://localhost:3000/api/customers';
 
-  constructor() {
-    this.loadInitialData();
-  }
-
-  private loadInitialData(): void {
-    // Load mock clients
-    const clients: Client[] = [
-      { id: '1', name: 'לקוח ראשון', email: 'client1@example.com', phone: '050-1234567' },
-      { id: '2', name: 'לקוח שני', email: 'client2@example.com', phone: '050-2345678' },
-      { id: '3', name: 'לקוח שלישי', email: 'client3@example.com', phone: '050-3456789' }
-    ];
-    this.clientsSubject.next(clients);
-
-    // Load mock incomes
-    const incomes: Income[] = [
-      {
-        id: '1',
-        receiptNumber: 'REC-001',
-        date: '2024-01-15',
-        clientId: '1',
-        amount: 1000,
-        vatRate: 17,
-        vat: 170,
-        paymentMethod: 'cash',
-        paymentDetails: { amount: 1170 },
-        details: 'מכירת מוצר א',
-        printDate: '2024-01-15',
-        createdAt: '2024-01-15T10:00:00Z'
-      },
-      {
-        id: '2',
-        receiptNumber: 'REC-002',
-        date: '2024-01-16',
-        clientId: '2',
-        amount: 2000,
-        vatRate: 17,
-        vat: 340,
-        paymentMethod: 'credit',
-        paymentDetails: { 
-          amount: 2340, 
-          lastFourDigits: '1234',
-          installments: 3
-        },
-        details: 'שירות ייעוץ',
-        printDate: '2024-01-16',
-        createdAt: '2024-01-16T14:30:00Z'
-      }
-    ];
-    this.incomesSubject.next(incomes);
-  }
+  constructor(private http: HttpClient) {}
 
   // Income Methods
   getIncomes(): Observable<Income[]> {
-    return this.incomes$;
+    return this.http.get<Income[]>(this.apiUrl);
   }
 
-  addIncome(income: Income): void {
-    const currentIncomes = this.incomesSubject.value;
-    income.id = Date.now().toString();
-    income.createdAt = new Date().toISOString();
-    income.printDate = new Date().toISOString().split('T')[0];
-    
-    const updatedIncomes = [...currentIncomes, income];
-    this.incomesSubject.next(updatedIncomes);
+  addIncome(income: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, income);
   }
 
-  updateIncome(income: Income): void {
-    const currentIncomes = this.incomesSubject.value;
-    const index = currentIncomes.findIndex(i => i.id === income.id);
-    
-    if (index !== -1) {
-      income.updatedAt = new Date().toISOString();
-      currentIncomes[index] = income;
-      this.incomesSubject.next([...currentIncomes]);
-    }
+  updateIncome(income: Income): Observable<Income> {
+    return this.http.put<Income>(`${this.apiUrl}/${income.id}`, income);
   }
 
-  deleteIncome(incomeId: string): void {
-    const currentIncomes = this.incomesSubject.value;
-    const filteredIncomes = currentIncomes.filter(i => i.id !== incomeId);
-    this.incomesSubject.next(filteredIncomes);
+  deleteIncome(incomeId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${incomeId}`);
   }
 
-  generateReceiptNumber(): string {
-    const currentIncomes = this.incomesSubject.value;
-    const today = new Date();
-    const year = today.getFullYear().toString().slice(-2);
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const lastNumber = currentIncomes.length + 1;
-    return `REC-${year}${month}-${lastNumber.toString().padStart(3, '0')}`;
+  generateReceiptNumber(): Observable<{ receiptNumber: string }> {
+    return this.http.get<{ receiptNumber: string }>(`${this.apiUrl}/generate-receipt-number`);
   }
 
   // Client Methods
   getClients(): Observable<Client[]> {
-    return this.clients$;
+    return this.http.get<Client[]>(this.clientsUrl);
   }
 
-  addClient(client: Client): void {
-    const currentClients = this.clientsSubject.value;
-    client.id = Date.now().toString();
-    
-    const updatedClients = [...currentClients, client];
-    this.clientsSubject.next(updatedClients);
+  addClient(client: Client): Observable<Client> {
+    return this.http.post<Client>(this.clientsUrl, client);
   }
 
-  updateClient(client: Client): void {
-    const currentClients = this.clientsSubject.value;
-    const index = currentClients.findIndex(c => c.id === client.id);
-    
-    if (index !== -1) {
-      currentClients[index] = client;
-      this.clientsSubject.next([...currentClients]);
-    }
+  updateClient(client: Client): Observable<Client> {
+    return this.http.put<Client>(`${this.clientsUrl}/${client.id}`, client);
   }
 
-  deleteClient(clientId: string): void {
-    const currentClients = this.clientsSubject.value;
-    const filteredClients = currentClients.filter(c => c.id !== clientId);
-    this.clientsSubject.next(filteredClients);
+  deleteClient(clientId: string): Observable<any> {
+    return this.http.delete(`${this.clientsUrl}/${clientId}`);
   }
 
-  getClientById(clientId: string): Client | undefined {
-    const clients = this.clientsSubject.value;
-    return clients.find(c => c.id === clientId);
+  getClientById(clientId: string): Observable<Client> {
+    return this.http.get<Client>(`${this.clientsUrl}/${clientId}`);
   }
 
-  // Helper Methods
+  // Helper Methods (ניתן להשאיר חישובים לוגיים בצד הקליינט במידת הצורך)
   calculateVAT(amount: number, vatRate: number): number {
     return Math.round((amount * vatRate / 100) * 100) / 100;
   }
@@ -182,13 +99,13 @@ export class IncomeService {
     const labels: { [key: string]: string } = {
       'cash': 'מזומן',
       'credit': 'אשראי',
-      'check': 'צ\'ק',
+      'check': "צ'ק",
       'bank_transfer': 'העברה בנקאית'
     };
     return labels[method] || method;
   }
 
-  // Statistics
+  // סטטיסטיקות וכד' - יש לבצע על הנתונים שמתקבלים מהשרת
   getTotalIncome(incomes: Income[]): number {
     return incomes.reduce((sum, income) => sum + income.amount, 0);
   }

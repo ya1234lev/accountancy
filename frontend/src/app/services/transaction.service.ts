@@ -53,7 +53,7 @@ export class TransactionService {
 
   // בדיקת חיבור לשרת
   private testServerConnection(): void {
-    this.http.get('http://localhost:3001').subscribe({
+    this.http.get('http://localhost:3000').subscribe({
       next: (response) => {
         console.log('חיבור לשרת הצליח:', response);
       },
