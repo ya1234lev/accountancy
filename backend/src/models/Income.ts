@@ -1,4 +1,5 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
+
 
 interface IPaymentDetails {
   method: 'cash' | 'credit' | 'check' | 'transfer';
@@ -23,7 +24,7 @@ interface IPaymentDetails {
 export interface IIncome extends Document {
   receiptNumber: string;
   date: Date;
-  customer: Types.ObjectId;
+  customer: number; // מספר מזהה של הלקוח
   amount: number;
   vat: number;
   payment: IPaymentDetails;
@@ -54,7 +55,7 @@ const paymentDetailsSchema = new Schema<IPaymentDetails>({
 const incomeSchema = new Schema<IIncome>({
   receiptNumber: { type: String, required: true, unique: true },
   date: { type: Date, required: true, default: Date.now },
-  customer: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
+  customer: { type: Number, required: true },
   amount: { type: Number, required: true },
   vat: { type: Number, required: true },
   payment: { type: paymentDetailsSchema, required: true },

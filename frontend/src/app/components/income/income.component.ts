@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CustomerService } from '../../services/customers';
+import { Income, IncomeService } from '../../services/income.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -71,14 +73,14 @@ export class IncomeComponent implements OnInit {
 
     // נתוני קבלה חדשה
     newReceipt: Partial<Receipt> = {
-        receiptNumber: '',
+        receiptNumber: '', //
         date: new Date().toISOString().split('T')[0],
         clientId: '',
         clientName: '',
-        amount: 0,
-        vatRate: 17,
-        vatAmount: 0,
-        totalAmount: 0,
+        amount: 0,// סכום סופי
+        vatRate: 17, //מע"מ
+        vatAmount: 0,//חישוב המע"מ מתוך ה 
+        totalAmount: 0,//סכום כולל מע"מ
         paymentMethod: 'cash',
         details: '',
         printDate: ''
@@ -116,7 +118,7 @@ export class IncomeComponent implements OnInit {
     // קבלה נוכחית ל-PDF
     currentReceiptForPDF: Receipt | null = null;
 
-    constructor(private router: Router) { }
+    constructor(private router: Router, private customerService: CustomerService, private incomeService: IncomeService) { }
 
     ngOnInit() {
         this.loadData();
@@ -135,21 +137,30 @@ export class IncomeComponent implements OnInit {
 
     // טעינת נתונים
     loadData() {
-        // טעינת נתונים מ-localStorage
+        // טעינת קבלות מה-localStorage (אם עדיין נדרש)
         const savedReceipts = localStorage.getItem('bookkeeping_receipts');
         if (savedReceipts) {
             this.receipts = JSON.parse(savedReceipts);
         }
 
-        const savedClients = localStorage.getItem('bookkeeping_clients');
-        if (savedClients) {
-            this.clients = JSON.parse(savedClients);
-        }
-
+        // טעינת הגדרות מה-localStorage (אם עדיין נדרש)
         const savedSettings = localStorage.getItem('bookkeeping_settings');
         if (savedSettings) {
             this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
         }
+
+        // טעינת לקוחות מהשרת
+        this.customerService.getCustomers().subscribe({
+            next: (data) => {
+                this.clients = data;
+            },
+            error: (err) => {
+                console.log("error", err);
+
+                this.showNotification('שגיאה בטעינת לקוחות מהשרת', 'error');
+                this.clients = [];
+            }
+        });
 
         // עדכון שדה מע"מ לפי הגדרות
         this.newReceipt.vatRate = this.settings.defaultVatRate;
@@ -158,11 +169,14 @@ export class IncomeComponent implements OnInit {
     // שמירת נתונים
     saveData() {
         localStorage.setItem('bookkeeping_receipts', JSON.stringify(this.receipts));
-        localStorage.setItem('bookkeeping_clients', JSON.stringify(this.clients));
+        // localStorage.setItem('bookkeeping_clients', JSON.stringify(this.clients));
     }
 
     saveSettings() {
         localStorage.setItem('bookkeeping_settings', JSON.stringify(this.settings));
+        // עדכון שדה מע"מ בטופס ההכנסה בכל שינוי הגדרה
+        this.newReceipt.vatRate = this.settings.defaultVatRate;
+        this.calculateTotal();
     }
 
     // יצירת מספר קבלה
@@ -172,15 +186,21 @@ export class IncomeComponent implements OnInit {
 
     // חישוב סך הכל
     calculateTotal() {
-        if (this.newReceipt.amount && this.newReceipt.vatRate) {
-            this.newReceipt.vatAmount = (this.newReceipt.amount * this.newReceipt.vatRate) / 100;
-            this.newReceipt.totalAmount = this.newReceipt.amount + this.newReceipt.vatAmount;
+        // סכום שמוזן הוא כולל מע"מ
+        const vatRate = this.newReceipt.vatRate || 0;
+        let gross = this.newReceipt.totalAmount || 0;
+        if (vatRate > 0) {
+            // חישוב סכום ללא מע"מ מתוך סכום כולל
+            const net = +(gross / (1 + vatRate / 100)).toFixed(2);
+            this.newReceipt.vatAmount = +(gross - net).toFixed(2);
+            this.newReceipt.amount = net;
+            this.newReceipt.totalAmount = gross;
         } else {
+            // ללא מע"מ
             this.newReceipt.vatAmount = 0;
-            this.newReceipt.totalAmount = this.newReceipt.amount || 0;
+            this.newReceipt.amount = gross;
+            this.newReceipt.totalAmount = gross;
         }
-
-        // עדכון פרטי התשלום בהתאם לסכום הכולל
         this.updatePaymentDetails();
     }
 
@@ -201,12 +221,21 @@ export class IncomeComponent implements OnInit {
             this.showNewClientModal = true;
             this.newReceipt.clientId = '';
         } else {
-            const selectedClient = this.clients.find(c => c.id === this.newReceipt.clientId);
+            const selectedClient = this.clients.find(c => c.id == this.newReceipt.clientId);
             if (selectedClient) {
                 this.newReceipt.clientName = selectedClient.name;
+                // הדפסת כל האובייקט לקונסול
+                console.log('selectedClient:', selectedClient);
+                // הדפסת מזהה הלקוח לקונסול (גם אם הוא מספר או מחרוזת)
+                console.log('נבחר לקוח עם מזהה:', selectedClient.id, 'typeof:', typeof selectedClient.id);
+                this.newReceipt.clientId = selectedClient.id;
+            } else {
+
+                console.log('לא נמצא לקוח מתאים עבור clientId:', this.newReceipt.clientId);
             }
         }
     }
+
 
     // שמירת קבלה
     saveReceipt() {
@@ -247,50 +276,53 @@ export class IncomeComponent implements OnInit {
         // עדכון מספר קבלה הבא
         this.settings.nextReceiptNumber++;
         this.saveSettings();
+        console.log("receipt", receipt);
 
+        this.addIncome(receipt)
         this.showNotification('הקבלה נשמרה בהצלחה', 'success');
         this.resetForm();
     }
 
     // שמירת לקוח
     saveClient() {
-        const client: Client = {
-            id: this.generateId(),
-            name: this.newClient.name!,
-            phone: this.newClient.phone,
-            email: this.newClient.email,
-            address: this.newClient.address,
-            created: new Date().toISOString()
-        };
-
-        this.clients.push(client);
-        this.saveData();
-        this.showNotification('הלקוח נוסף בהצלחה', 'success');
-
-        this.newClient = { name: '', phone: '', email: '', address: '' };
-        this.showNewClientForm = false;
+        // הוספת id ייחודי ללקוח אם אין (מספר עולה)
+        if (!this.newClient.id) {
+            this.newClient.id = String(this.generateClientId());
+        }
+        this.customerService.addCustomer(this.newClient).subscribe({
+            next: (createdClient) => {
+                this.showNotification('הלקוח נוסף בהצלחה', 'success');
+                this.newClient = { name: '', phone: '', email: '', address: '' };
+                this.showNewClientForm = false;
+                this.loadData(); // רענון רשימת הלקוחות
+            },
+            error: (err) => {
+                this.showNotification('שגיאה בהוספת לקוח', 'error');
+            }
+        });
     }
 
     // שמירת לקוח מהמודל
     saveNewClientFromModal() {
-        const client: Client = {
-            id: this.generateId(),
-            name: this.modalNewClient.name!,
-            phone: this.modalNewClient.phone,
-            email: this.modalNewClient.email,
-            address: this.modalNewClient.address,
-            created: new Date().toISOString()
-        };
-
-        this.clients.push(client);
-        this.saveData();
-
-        // בחירת הלקוח החדש
-        this.newReceipt.clientId = client.id;
-        this.newReceipt.clientName = client.name;
-
-        this.showNotification('הלקוח נוסף בהצלחה', 'success');
-        this.closeNewClientModal();
+        // הוספת id ייחודי ללקוח אם אין (מספר עולה)
+        if (!this.modalNewClient.id) {
+            this.modalNewClient.id = String(this.generateClientId());
+        }
+        this.customerService.addCustomer(this.modalNewClient).subscribe({
+            next: (createdClient) => {
+                this.showNotification('הלקוח נוסף בהצלחה', 'success');
+                this.closeNewClientModal();
+                this.loadData(); // רענון רשימת הלקוחות
+                // בחירת הלקוח החדש בטופס
+                if (createdClient && createdClient.id) {
+                    this.newReceipt.clientId = createdClient.id;
+                    this.newReceipt.clientName = createdClient.name;
+                }
+            },
+            error: (err) => {
+                this.showNotification('שגיאה בהוספת לקוח', 'error');
+            }
+        });
     }
 
     // סגירת מודל לקוח חדש
@@ -430,6 +462,76 @@ export class IncomeComponent implements OnInit {
         }
     }
 
+
+    // המרת Receipt לאובייקט Income בפורמט השרת
+    private mapReceiptToIncome(receipt: Receipt): any {
+        // המרת clientId למספר מזהה (אם אפשרי)
+        let customerId: Number | null = null;
+        if (receipt.clientId) {
+            const client = this.clients.find(c => c.id === receipt.clientId);
+            if (client && !isNaN(Number(client.id))) {
+                customerId = Number(client.id);
+                console.log("customerId", customerId);
+
+            }
+        }
+
+        // בניית אובייקט payment לפי סוג התשלום
+        let payment: any = { method: receipt.paymentMethod, amount: receipt.totalAmount };
+        if (receipt.paymentMethod === 'cash' && receipt.cashDetails) {
+            payment.amount = receipt.cashDetails.amount;
+        } else if (receipt.paymentMethod === 'credit' && receipt.creditDetails) {
+            payment.creditCard = {
+                last4Digits: receipt.creditDetails.lastFourDigits,
+                installments: receipt.creditDetails.installments
+            };
+            payment.amount = receipt.creditDetails.amount;
+        } else if (receipt.paymentMethod === 'check' && receipt.checkDetails) {
+            payment.check = {
+                checkNumber: receipt.checkDetails.checkNumber,
+                accountNumber: receipt.checkDetails.accountNumber,
+                bankNumber: receipt.checkDetails.bankNumber,
+                dueDate: receipt.checkDetails.dueDate
+            };
+            payment.amount = receipt.checkDetails.amount;
+        } else if (receipt.paymentMethod === 'transfer' && receipt.transferDetails) {
+            payment.transfer = {
+                referenceNumber: '', // אם יש שדה כזה
+                accountNumber: receipt.transferDetails.accountNumber,
+                bankNumber: receipt.transferDetails.bankNumber
+            };
+            payment.amount = receipt.transferDetails.amount;
+        }
+
+        return {
+            receiptNumber: receipt.receiptNumber,
+            date: receipt.date,
+            customer: customerId,
+            amount: receipt.amount,
+            vat: receipt.vatAmount,
+            payment,
+            details: receipt.details,
+            receiptPrintedDate: receipt.printDate
+        };
+    }
+
+    addIncome(receipt: Receipt) {
+        const income = this.mapReceiptToIncome(receipt);
+        console.log("income 1", income);
+
+        this.incomeService.addIncome(income).subscribe({
+            next: (createdIncome: any) => {
+                this.showNotification(' ההכנסה נוספה בהצלחה לשרת', 'success');
+                this.loadData(); // רענון רשימת הקבלות
+            },
+            error: (err: any) => {
+                console.log("error", err);
+
+                this.showNotification('שגיאה בהוספת הכנסה לשרת', 'error');
+            }
+        });
+    }
+
     // עריכת קבלה
     editReceipt(receipt: Receipt) {
         this.showNotification(' עריכה בפיתוח', 'info');
@@ -450,22 +552,22 @@ export class IncomeComponent implements OnInit {
         return this.receipts.filter(receipt => {
             // חיפוש לפי מספר קבלה
             const receiptNumberMatch = receipt.receiptNumber.toLowerCase().includes(term);
-            
+
             // חיפוש לפי שם לקוח
             const clientNameMatch = receipt.clientName.toLowerCase().includes(term);
-            
+
             // חיפוש לפי תאריך (בפורמטים שונים)
             const receiptDate = new Date(receipt.date);
             const formattedDate1 = receiptDate.toLocaleDateString('he-IL'); // פורמט ישראלי
             const formattedDate2 = receiptDate.toLocaleDateString('en-GB'); // פורמט dd/mm/yyyy
             const formattedDate3 = receipt.date; // פורמט ISO (yyyy-mm-dd)
-            const dateMatch = formattedDate1.includes(term) || 
-                            formattedDate2.includes(term) || 
-                            formattedDate3.includes(term);
-            
+            const dateMatch = formattedDate1.includes(term) ||
+                formattedDate2.includes(term) ||
+                formattedDate3.includes(term);
+
             // חיפוש לפי פרטים
             const detailsMatch = receipt.details.toLowerCase().includes(term);
-            
+
             return receiptNumberMatch || clientNameMatch || dateMatch || detailsMatch;
         });
     }
@@ -485,6 +587,15 @@ export class IncomeComponent implements OnInit {
     generateId(): string {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
+    generateClientId(): number {
+        // מחפש את ה-id הגבוה ביותר במערך הלקוחות ומחזיר את הבא בתור
+        const maxId = this.clients
+            .map(c => Number(c.id))
+            .filter(n => !isNaN(n))
+            .reduce((max, curr) => curr > max ? curr : max, 0);
+        return maxId + 1;
+    }
+
 
     // הצגת הודעה
     showNotification(message: string, type: 'success' | 'error' | 'info') {

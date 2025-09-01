@@ -1,6 +1,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface ICustomer extends Document {
+  id:String;
   name: string;
   contactPerson?: string;
   email?: string;
@@ -9,6 +10,7 @@ export interface ICustomer extends Document {
 }
 
 const customerSchema = new Schema<ICustomer>({
+  id:{ type: String, required: true },
   name: { type: String, required: true },
   contactPerson: { type: String },
   email: { type: String },
