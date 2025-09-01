@@ -87,7 +87,7 @@
   vertical-align: middle;
 }
 
-.data-table tr:hover {
+.data-table tr:not(.row--income):not(.row--expense):hover {
   background: var(--gray-50);
 }
 
@@ -95,8 +95,16 @@
   background: rgba(56, 161, 105, 0.03);
 }
 
+.row--income:hover {
+  background: rgba(56, 161, 105, 0.06);
+}
+
 .row--expense {
   background: rgba(229, 62, 62, 0.03);
+}
+
+.row--expense:hover {
+  background: rgba(229, 62, 62, 0.06);
 }
 
 .amount--income {
