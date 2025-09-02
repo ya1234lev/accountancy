@@ -44,7 +44,6 @@
 .nav-button.active,
 .nav-button:hover {
   background: var(--accent-color);
-  color: var(--white);
 }
 
 .main-content {
@@ -185,7 +184,7 @@
   position: fixed;
   top: 2rem;
   left: 2rem;
-  z-index: 1000;
+  z-index: 9999; /* z-index גבוה מאוד */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,6 +197,24 @@
   box-shadow: 0 3px 10px rgba(17, 54, 156, 0.3);
   transition: all 0.2s ease;
   cursor: pointer;
+  /* אזור לחיצה גדול יותר בלי לשנות את הגודל החזותי */
+  padding: 0;
+  /* מניעת כיסוי על ידי אלמנטים אחרים */
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-button-fixed::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border-radius: 50%;
+  /* אזור לחיצה נסתר אבל פעיל */
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .back-button-fixed:hover {

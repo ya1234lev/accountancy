@@ -153,91 +153,77 @@
                 </div>
 
                 <!-- פרטי תשלום - מזומן -->
-                <div *ngIf="newReceipt.paymentMethod === 'cash'" class="payment-details full-width">
-                  <h4>פרטי תשלום במזומן</h4>
-                  <div class="payment-grid">
-                    <div class="form-group">
-                      <label for="cashAmount">סכום</label>
-                      <input type="number" id="cashAmount" [(ngModel)]="cashDetails.amount" name="cashAmount"
-                        step="0.01">
+                <div *ngIf="newReceipt.paymentMethod === 'cash'" class="form-group full-width">
+                  <div class="payment-details-grid cash-payment">
+                    <div class="payment-field">
+                      <label>סכום</label>
+                      <input type="number" [(ngModel)]="cashDetails.amount" name="cashAmount" step="0.01" placeholder="סכום">
                     </div>
                   </div>
                 </div>
 
                 <!-- פרטי תשלום - אשראי -->
-                <div *ngIf="newReceipt.paymentMethod === 'credit'" class="payment-details full-width">
-                  <h4>פרטי תשלום באשראי</h4>
-                  <div class="payment-grid">
-                    <div class="form-group">
-                      <label for="creditAmount">סכום</label>
-                      <input type="number" id="creditAmount" [(ngModel)]="creditDetails.amount" name="creditAmount"
-                        step="0.01">
+                <div *ngIf="newReceipt.paymentMethod === 'credit'" class="form-group full-width">
+                  <div class="payment-details-grid credit-payment">
+                    <div class="payment-field">
+                      <label>4 ספרות אחרונות</label>
+                      <input type="text" [(ngModel)]="creditDetails.lastFourDigits" name="lastFourDigits" maxlength="4" pattern="[0-9]{4}" placeholder="1234">
                     </div>
-                    <div class="form-group">
-                      <label for="lastFourDigits">4 ספרות אחרונות</label>
-                      <input type="text" id="lastFourDigits" [(ngModel)]="creditDetails.lastFourDigits"
-                        name="lastFourDigits" maxlength="4" pattern="[0-9]{4}">
+                    <div class="payment-field">
+                      <label>סכום</label>
+                      <input type="number" [(ngModel)]="creditDetails.amount" name="creditAmount" step="0.01" placeholder="סכום">
                     </div>
-                    <div class="form-group">
-                      <label for="installments">מספר תשלומים</label>
-                      <input type="number" id="installments" [(ngModel)]="creditDetails.installments"
-                        name="installments" min="1">
+                    <div class="payment-field">
+                      <label>מספר תשלומים</label>
+                      <input type="number" [(ngModel)]="creditDetails.installments" name="installments" min="1" placeholder="1">
                     </div>
                   </div>
                 </div>
 
                 <!-- פרטי תשלום - צ'ק -->
-                <div *ngIf="newReceipt.paymentMethod === 'check'" class="payment-details full-width">
-                  <h4>פרטי תשלום בצ'ק</h4>
-                  <div class="payment-grid">
-                    <div class="form-group">
-                      <label for="checkAmount">סכום</label>
-                      <input type="number" id="checkAmount" [(ngModel)]="checkDetails.amount" name="checkAmount"
-                        step="0.01">
+                <div *ngIf="newReceipt.paymentMethod === 'check'" class="form-group full-width">
+                  <div class="payment-details-grid">
+                    <div class="payment-field">
+                      <label>מספר צ'ק</label>
+                      <input type="text" [(ngModel)]="checkDetails.checkNumber" name="checkNumber" placeholder="מספר צ'ק">
                     </div>
-                    <div class="form-group">
-                      <label for="checkNumber">מספר צ'ק</label>
-                      <input type="text" id="checkNumber" [(ngModel)]="checkDetails.checkNumber" name="checkNumber">
+                    <div class="payment-field">
+                      <label>מספר חשבון</label>
+                      <input type="text" [(ngModel)]="checkDetails.accountNumber" name="accountNumber" placeholder="מספר חשבון">
                     </div>
-                    <div class="form-group">
-                      <label for="accountNumber">מספר חשבון</label>
-                      <input type="text" id="accountNumber" [(ngModel)]="checkDetails.accountNumber"
-                        name="accountNumber">
+                    <div class="payment-field">
+                      <label>מספר בנק</label>
+                      <input type="text" [(ngModel)]="checkDetails.bankNumber" name="bankNumber" placeholder="מספר בנק">
                     </div>
-                    <div class="form-group">
-                      <label for="bankNumber">מספר בנק</label>
-                      <input type="text" id="bankNumber" [(ngModel)]="checkDetails.bankNumber" name="bankNumber">
+                    <div class="payment-field">
+                      <label>סכום</label>
+                      <input type="number" [(ngModel)]="checkDetails.amount" name="checkAmount" step="0.01" placeholder="סכום">
                     </div>
-                    <div class="form-group">
-                      <label for="dueDate">תאריך פירעון</label>
-                      <input type="date" id="dueDate" [(ngModel)]="checkDetails.dueDate" name="dueDate">
+                    <div class="payment-field">
+                      <label>תאריך פירעון</label>
+                      <input type="date" [(ngModel)]="checkDetails.dueDate" name="dueDate">
                     </div>
                   </div>
                 </div>
 
                 <!-- פרטי תשלום - העברה בנקאית -->
-                <div *ngIf="newReceipt.paymentMethod === 'transfer'" class="payment-details full-width">
-                  <h4>פרטי העברה בנקאית</h4>
-                  <div class="payment-grid">
-                    <div class="form-group">
-                      <label for="transferAmount">סכום</label>
-                      <input type="number" id="transferAmount" [(ngModel)]="transferDetails.amount"
-                        name="transferAmount" step="0.01">
+                <div *ngIf="newReceipt.paymentMethod === 'transfer'" class="form-group full-width">
+                  <div class="payment-details-grid">
+                    <div class="payment-field">
+                      <label>מספר חשבון</label>
+                      <input type="text" [(ngModel)]="transferDetails.accountNumber" name="transferAccountNumber" placeholder="מספר חשבון">
                     </div>
-                    <div class="form-group">
-                      <label for="transferAccountNumber">מספר חשבון</label>
-                      <input type="text" id="transferAccountNumber" [(ngModel)]="transferDetails.accountNumber"
-                        name="transferAccountNumber">
+                    <div class="payment-field">
+                      <label>מספר בנק</label>
+                      <input type="text" [(ngModel)]="transferDetails.bankNumber" name="transferBankNumber" placeholder="מספר בנק">
                     </div>
-                    <div class="form-group">
-                      <label for="transferBankNumber">מספר בנק</label>
-                      <input type="text" id="transferBankNumber" [(ngModel)]="transferDetails.bankNumber"
-                        name="transferBankNumber">
+                    <div class="payment-field">
+                      <label>סכום</label>
+                      <input type="number" [(ngModel)]="transferDetails.amount" name="transferAmount" step="0.01" placeholder="סכום">
                     </div>
-                    <div class="form-group">
-                      <label for="transferDate">תאריך העברה</label>
-                      <input type="date" id="transferDate" [(ngModel)]="transferDetails.transferDate"
-                        name="transferDate">
+                    <div class="payment-field">
+                      <label>תאריך העברה</label>
+                      <input type="date" [(ngModel)]="transferDetails.transferDate" name="transferDate">
                     </div>
                   </div>
                 </div>

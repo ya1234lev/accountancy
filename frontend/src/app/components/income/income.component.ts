@@ -141,7 +141,7 @@ export class IncomeComponent implements OnInit {
         this.customerService.getCustomers().subscribe({
             next: (data) => {
                 this.clients = data;
-                this.showNotification('טעינת לקוחות מהשרת עברה בהצלחה', 'success');
+                // this.showNotification('טעינת לקוחות מהשרת עברה בהצלחה', 'success');
 
                 // רק אחרי שהלקוחות נטענו, טען קבלות
                 this.incomeService.getIncomes().subscribe({
@@ -183,10 +183,10 @@ export class IncomeComponent implements OnInit {
                             this.settings.nextReceiptNumber = 1001;
                         }
                         this.generateReceiptNumber();
-                        this.showNotification('טעינת קבלות מהשרת עברה בהצלחה', 'success');
+                        // this.showNotification('טעינת קבלות מהשרת עברה בהצלחה', 'success');
                     },
                     error: () => {
-                        this.showNotification('שגיאה בטעינת קבלות מהשרת', 'error');
+                        console.log('שגיאה בטעינת קבלות מהשרת');
                         this.receipts = [];
                         this.settings.nextReceiptNumber = 1001;
                         this.generateReceiptNumber();
@@ -194,7 +194,7 @@ export class IncomeComponent implements OnInit {
                 });
             },
             error: (err) => {
-                this.showNotification('שגיאה בטעינת לקוחות מהשרת', 'error');
+                console.log('שגיאה בטעינת לקוחות מהשרת', err);
                 this.clients = [];
             }
         });
@@ -308,7 +308,7 @@ export class IncomeComponent implements OnInit {
         this.settings.nextReceiptNumber++;
         this.saveSettings();
         this.addIncome(receipt)
-        this.showNotification('הקבלה נשמרה בהצלחה', 'success');
+        console.log('הקבלה נשמרה בהצלחה');
         this.resetForm();
     }
 
@@ -320,13 +320,13 @@ export class IncomeComponent implements OnInit {
         }
         this.customerService.addCustomer(this.newClient).subscribe({
             next: (createdClient) => {
-                this.showNotification('הלקוח נוסף בהצלחה', 'success');
+                console.log('הלקוח נוסף בהצלחה');
                 this.newClient = { name: '', phone: '', email: '', address: '' };
                 this.showNewClientForm = false;
                 this.loadData(); // רענון רשימת הלקוחות
             },
             error: (err) => {
-                this.showNotification('שגיאה בהוספת לקוח', 'error');
+                console.log('שגיאה בהוספת לקוח', err);
             }
         });
     }
