@@ -62,7 +62,6 @@ export class ExpenseComponent implements OnInit {
         nextExpenseNumber: 1001
     };
 
-
     searchTerm = '';
 
     constructor(private expenseService: ExpenseService, private supplierService: SupplierService, private router: Router) { }
