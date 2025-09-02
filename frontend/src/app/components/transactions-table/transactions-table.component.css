@@ -87,7 +87,7 @@
   vertical-align: middle;
 }
 
-.data-table tr:hover {
+.data-table tr:not(.row--income):not(.row--expense):hover {
   background: var(--gray-50);
 }
 
@@ -95,8 +95,16 @@
   background: rgba(56, 161, 105, 0.03);
 }
 
+.row--income:hover {
+  background: rgba(56, 161, 105, 0.06);
+}
+
 .row--expense {
   background: rgba(229, 62, 62, 0.03);
+}
+
+.row--expense:hover {
+  background: rgba(229, 62, 62, 0.06);
 }
 
 .amount--income {
@@ -192,6 +200,48 @@
 .btn--sm {
   padding: 0.5rem 0.75rem;
   font-size: 0.75rem;
+}
+
+/* Pagination Controls - Completely independent element */
+.show-more-section {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  background: transparent;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.show-more-btn, .show-less-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.show-more-btn:hover, .show-less-btn:hover {
+  color: #374151;
+}
+
+.show-more-btn svg, .show-less-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.pagination-info {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
 }
 
 /* Empty State */

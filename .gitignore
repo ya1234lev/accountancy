@@ -40,3 +40,45 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Backend specific
+backend/node_modules/
+backend/dist/
+backend/build/
+backend/logs/
+backend/*.log
+backend/.env
+backend/.env.local
+backend/.env.development
+backend/.env.test
+backend/.env.production
+backend/uploads/
+backend/temp/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Runtime data
+backend/pids
+backend/*.pid
+backend/*.seed
+backend/*.pid.lock
+
+# Coverage directory used by tools like istanbul
+backend/coverage/
+backend/.nyc_output
+
+# Dependency directories
+backend/.npm
+backend/.eslintcache
+
+# Optional REPL history
+backend/.node_repl_history
+
+# Output of 'npm pack'
+backend/*.tgz
+
+# Yarn Integrity file
+backend/.yarn-integrity
