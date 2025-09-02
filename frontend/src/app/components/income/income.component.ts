@@ -222,24 +222,17 @@ export class IncomeComponent implements OnInit {
     generateReceiptNumber() {
         this.newReceipt.receiptNumber = this.settings.receiptPrefix + this.settings.nextReceiptNumber;
     }
-
-    // חישוב סך הכל
+ // חישוב סך הכל
     calculateTotal() {
-        // סכום שמוזן הוא כולל מע"מ
-        const vatRate = this.newReceipt.vatRate || 0;
-        let gross = this.newReceipt.totalAmount || 0;
-        if (vatRate > 0) {
-            // חישוב סכום ללא מע"מ מתוך סכום כולל
-            const net = +(gross / (1 + vatRate / 100)).toFixed(2);
-            this.newReceipt.vatAmount = +(gross - net).toFixed(2);
-            this.newReceipt.amount = net;
-            this.newReceipt.totalAmount = gross;
+        if (this.newReceipt.amount && this.newReceipt.vatRate) {
+            this.newReceipt.vatAmount = (this.newReceipt.amount * this.newReceipt.vatRate) / 100;
+            this.newReceipt.totalAmount = this.newReceipt.amount + this.newReceipt.vatAmount;
         } else {
-            // ללא מע"מ
             this.newReceipt.vatAmount = 0;
-            this.newReceipt.amount = gross;
-            this.newReceipt.totalAmount = gross;
+            this.newReceipt.totalAmount = this.newReceipt.amount || 0;
         }
+
+        // עדכון פרטי התשלום בהתאם לסכום הכולל
         this.updatePaymentDetails();
     }
 
