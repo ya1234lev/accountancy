@@ -23,19 +23,22 @@ import { Router } from '@angular/router';
         </div>
       </div>
 
-      <div class="stat-card stat-card--expense">
-        <div class="stat-card__content">
-          <div class="stat-card__header">
-            <span class="stat-card__icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z"/>
-              </svg>
-            </span>
-            <span class="stat-card__title">הוצאות</span>
-          </div>
-          <div class="stat-card__value">{{totalExpenses | number:'1.2-2'}} ₪</div>
-        </div>
+       
+
+  <div class="stat-card stat-card--expense clickable" (click)="navigateToExpense()">
+    <div class="stat-card__content">
+      <div class="stat-card__header">
+        <span class="stat-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z"/>
+          </svg>
+        </span>
+        <span class="stat-card__title">הוצאות</span>
       </div>
+      <div class="stat-card__value">{{totalExpenses | number:'1.2-2'}} ₪</div>
+      <div class="stat-card__action ">לחץ לניהול הוצאות</div>
+    </div>
+  </div>
 
       <div class="stat-card stat-card--profit">
         <div class="stat-card__content">
@@ -50,7 +53,7 @@ import { Router } from '@angular/router';
           <div class="stat-card__value">{{netProfit | number:'1.2-2'}} ₪</div>
         </div>
       </div>
-    </div>
+    <!-- </div> -->
   `,
   styles: [`
     .stats-row {
@@ -73,10 +76,20 @@ import { Router } from '@angular/router';
       cursor: pointer;
     }
 
+
     .stat-card.clickable:hover {
       transform: translateY(-3px);
       box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card--income.clickable:hover {
       border-color: var(--success-color);
+    }
+    .stat-card--expense.clickable:hover {
+      border-color: var(--danger-color);
+    }
+    .stat-card--profit.clickable:hover {
+      border-color: var(--accent-color);
     }
 
     .stat-card:hover {
@@ -148,15 +161,20 @@ import { Router } from '@angular/router';
       line-height: 1;
     }
 
+
     .stat-card__action {
       font-size: 0.8rem;
-      color: var(--success-color);
       font-weight: 500;
       margin-top: 0.5rem;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
-
+    .stat-card__action--expense {
+      color: var(--danger-color);
+    }
+    .stat-card__action--income {
+      color: var(--success-color);
+    }
     .stat-card.clickable:hover .stat-card__action {
       opacity: 1;
     }
@@ -179,9 +197,13 @@ export class StatisticsComponent {
   @Input() totalExpenses: number = 0;
   @Input() netProfit: number = 0;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   navigateToIncome(): void {
     this.router.navigate(['/income']);
+  }
+
+  navigateToExpense(): void {
+    this.router.navigate(['/expense']);
   }
 }
