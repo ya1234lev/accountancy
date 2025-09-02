@@ -137,11 +137,67 @@ export class IncomeComponent implements OnInit {
 
     // טעינת נתונים
     loadData() {
-        // טעינת קבלות מה-localStorage (אם עדיין נדרש)
-        const savedReceipts = localStorage.getItem('bookkeeping_receipts');
-        if (savedReceipts) {
-            this.receipts = JSON.parse(savedReceipts);
-        }
+        // טעינת לקוחות מהשרת תחילה, ואז קבלות
+        this.customerService.getCustomers().subscribe({
+            next: (data) => {
+                this.clients = data;
+                this.showNotification('טעינת לקוחות מהשרת עברה בהצלחה', 'success');
+
+                // רק אחרי שהלקוחות נטענו, טען קבלות
+                this.incomeService.getIncomes().subscribe({
+                    next: (data) => {
+                        this.receipts = data.map((income: any) => {
+                            let clientId = income.customer?.id || income.customer || '';
+                            let clientName = '';
+                            if (typeof clientId === 'number' || (!isNaN(Number(clientId)) && clientId !== '')) {
+                                const foundClient = this.clients.find(c => String(c.id) === String(clientId));
+                                clientName = foundClient ? foundClient.name : '';
+                            } else {
+                                clientName = income.customer?.name || '';
+                            }
+                            return {
+                                id: income.id || income._id || '',
+                                receiptNumber: income.receiptNumber || '',
+                                date: income.date || '',
+                                clientId,
+                                clientName,
+                                amount: income.amount || 0,
+                                vatRate: income.vatRate || 17,
+                                vatAmount: income.vat || 0,
+                                totalAmount: (income.amount || 0) + (income.vat || 0),
+                                paymentMethod: income.payment?.method || 'cash',
+                                details: income.details || '',
+                                printDate: income.receiptPrintedDate || '',
+                            };
+                        });
+                        // עדכון nextReceiptNumber לפי receiptNumber האחרון
+                        if (this.receipts && this.receipts.length > 0) {
+                            const lastReceipt = this.receipts.reduce((prev, curr) => {
+                                const prevNum = Number((prev.receiptNumber || '').replace(/\D/g, ''));
+                                const currNum = Number((curr.receiptNumber || '').replace(/\D/g, ''));
+                                return currNum > prevNum ? curr : prev;
+                            });
+                            const lastNum = Number((lastReceipt.receiptNumber || '').replace(/\D/g, ''));
+                            this.settings.nextReceiptNumber = lastNum + 1;
+                        } else {
+                            this.settings.nextReceiptNumber = 1001;
+                        }
+                        this.generateReceiptNumber();
+                        this.showNotification('טעינת קבלות מהשרת עברה בהצלחה', 'success');
+                    },
+                    error: () => {
+                        this.showNotification('שגיאה בטעינת קבלות מהשרת', 'error');
+                        this.receipts = [];
+                        this.settings.nextReceiptNumber = 1001;
+                        this.generateReceiptNumber();
+                    }
+                });
+            },
+            error: (err) => {
+                this.showNotification('שגיאה בטעינת לקוחות מהשרת', 'error');
+                this.clients = [];
+            }
+        });
 
         // טעינת הגדרות מה-localStorage (אם עדיין נדרש)
         const savedSettings = localStorage.getItem('bookkeeping_settings');
@@ -149,31 +205,14 @@ export class IncomeComponent implements OnInit {
             this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
         }
 
-        // טעינת לקוחות מהשרת
-        this.customerService.getCustomers().subscribe({
-            next: (data) => {
-                this.clients = data;
-            },
-            error: (err) => {
-                console.log("error", err);
-
-                this.showNotification('שגיאה בטעינת לקוחות מהשרת', 'error');
-                this.clients = [];
-            }
-        });
 
         // עדכון שדה מע"מ לפי הגדרות
         this.newReceipt.vatRate = this.settings.defaultVatRate;
     }
 
-    // שמירת נתונים
-    saveData() {
-        localStorage.setItem('bookkeeping_receipts', JSON.stringify(this.receipts));
-        // localStorage.setItem('bookkeeping_clients', JSON.stringify(this.clients));
-    }
 
     saveSettings() {
-        localStorage.setItem('bookkeeping_settings', JSON.stringify(this.settings));
+        localStorage.setItem('bookkeeping_income_settings', JSON.stringify(this.settings));
         // עדכון שדה מע"מ בטופס ההכנסה בכל שינוי הגדרה
         this.newReceipt.vatRate = this.settings.defaultVatRate;
         this.calculateTotal();
@@ -264,13 +303,10 @@ export class IncomeComponent implements OnInit {
         }
 
         this.receipts.unshift(receipt);
-        this.saveData();
 
         // עדכון מספר קבלה הבא
         this.settings.nextReceiptNumber++;
         this.saveSettings();
-        console.log("receipt", receipt);
-
         this.addIncome(receipt)
         this.showNotification('הקבלה נשמרה בהצלחה', 'success');
         this.resetForm();
@@ -510,7 +546,7 @@ export class IncomeComponent implements OnInit {
 
     addIncome(receipt: Receipt) {
         const income = this.mapReceiptToIncome(receipt);
-        console.log("income 1", income);
+        console.log("uncome", income);
 
         this.incomeService.addIncome(income).subscribe({
             next: (createdIncome: any) => {
@@ -606,10 +642,10 @@ export class IncomeComponent implements OnInit {
             notification.visible = true;
         }, 100);
 
-        // הסרת ההודעה אחרי 5 שניות
+        // הסרת ההודעה אחרי 2 שניות
         setTimeout(() => {
             this.removeNotification(notification.id);
-        }, 5000);
+        }, 2000);
     }
 
     // הסרת הודעה
