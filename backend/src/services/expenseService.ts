@@ -20,3 +20,9 @@ export const updateExpense = async (id: string, expenseData: Partial<IExpense>):
 export const deleteExpense = async (id: string): Promise<IExpense | null> => {
   return await Expense.findByIdAndDelete(id);
 };
+
+// מחיקת כל ההוצאות
+export const deleteAllExpenses = async (): Promise<{ deletedCount: number }> => {
+  const result = await Expense.deleteMany({});
+  return { deletedCount: result.deletedCount };
+};

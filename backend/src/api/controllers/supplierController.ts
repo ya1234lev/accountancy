@@ -23,6 +23,8 @@ export const getSupplier = async (req: Request, res: Response) => {
 };
 
 export const getSuppliers = async (req: Request, res: Response) => {
+  console.log("req.cody",req.body);
+  
   try {
     const suppliers = await supplierService.getAllSuppliers();
     res.json(suppliers);
@@ -52,5 +54,15 @@ export const deleteSupplier = async (req: Request, res: Response) => {
     res.json({ message: 'Supplier deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting supplier', error });
+  }
+};
+
+// מחיקת כל הספקים
+export const deleteAllSuppliers = async (req: Request, res: Response) => {
+  try {
+    const result = await supplierService.deleteAllSuppliers();
+    res.json({ message: 'All suppliers deleted successfully', deletedCount: result.deletedCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting all suppliers', error });
   }
 };

@@ -20,3 +20,9 @@ export const updateSupplier = async (id: string, supplierData: Partial<ISupplier
 export const deleteSupplier = async (id: string): Promise<ISupplier | null> => {
   return await Supplier.findByIdAndDelete(id);
 };
+
+// מחיקת כל הספקים
+export const deleteAllSuppliers = async (): Promise<{ deletedCount: number }> => {
+  const result = await Supplier.deleteMany({});
+  return { deletedCount: result.deletedCount };
+};

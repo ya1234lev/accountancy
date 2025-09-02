@@ -54,3 +54,13 @@ export const deleteIncome = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error deleting income', error });
   }
 };
+
+// מחיקת כל ההכנסות
+export const deleteAllIncomes = async (req: Request, res: Response) => {
+  try {
+    const result = await incomeService.deleteAllIncomes();
+    res.json({ message: 'All incomes deleted successfully', deletedCount: result.deletedCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting all incomes', error });
+  }
+};

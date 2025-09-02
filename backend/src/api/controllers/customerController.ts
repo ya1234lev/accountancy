@@ -54,3 +54,13 @@ export const deleteCustomer = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error deleting customer', error });
   }
 };
+
+// מחיקת כל הלקוחות
+export const deleteAllCustomers = async (req: Request, res: Response) => {
+  try {
+    const result = await customerService.deleteAllCustomers();
+    res.json({ message: 'All customers deleted successfully', deletedCount: result.deletedCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting all customers', error });
+  }
+};

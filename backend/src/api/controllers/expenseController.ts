@@ -3,6 +3,8 @@ import * as expenseService from '../../services/expenseService';
 
 export const createExpense = async (req: Request, res: Response) => {
   try {
+    console.log("req.body", req.body);
+
     const expense = await expenseService.createExpense(req.body);
     res.status(201).json(expense);
   } catch (error) {
@@ -52,5 +54,15 @@ export const deleteExpense = async (req: Request, res: Response) => {
     res.json({ message: 'Expense deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting expense', error });
+  }
+};
+
+// מחיקת כל ההוצאות
+export const deleteAllExpenses = async (req: Request, res: Response) => {
+  try {
+    const result = await expenseService.deleteAllExpenses();
+    res.json({ message: 'All expenses deleted successfully', deletedCount: result.deletedCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting all expenses', error });
   }
 };
