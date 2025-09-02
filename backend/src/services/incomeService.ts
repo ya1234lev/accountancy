@@ -20,3 +20,9 @@ export const updateIncome = async (id: string, incomeData: Partial<IIncome>): Pr
 export const deleteIncome = async (id: string): Promise<IIncome | null> => {
   return await Income.findByIdAndDelete(id);
 };
+
+// מחיקת כל ההכנסות
+export const deleteAllIncomes = async (): Promise<{ deletedCount: number }> => {
+  const result = await Income.deleteMany({});
+  return { deletedCount: result.deletedCount };
+};

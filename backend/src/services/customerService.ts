@@ -20,3 +20,9 @@ export const updateCustomer = async (id: string, customerData: Partial<ICustomer
 export const deleteCustomer = async (id: string): Promise<ICustomer | null> => {
   return await Customer.findByIdAndDelete(id);
 };
+
+// מחיקת כל הלקוחות
+export const deleteAllCustomers = async (): Promise<{ deletedCount: number }> => {
+  const result = await Customer.deleteMany({});
+  return { deletedCount: result.deletedCount };
+};
