@@ -198,6 +198,17 @@
   box-shadow: 0 3px 10px rgba(17, 54, 156, 0.3);
   transition: all 0.2s ease;
   cursor: pointer;
+  padding: 12px;
+}
+
+.back-button-fixed::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border-radius: 50%;
 }
 
 .back-button-fixed:hover {

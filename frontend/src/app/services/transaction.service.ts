@@ -44,7 +44,7 @@ export class TransactionService {
   public notifications$ = this.notificationsSubject.asObservable();
 
   // URL של השרת
-  private baseUrl = 'http://localhost:3001/api';
+  private baseUrl = 'http://localhost:3000/api';
 
   constructor(private http: HttpClient) {
     this.loadSavedData();
