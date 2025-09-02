@@ -1,9 +1,10 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExpenseService, Expense } from '../../services/expense.services';
 import { SupplierService, Supplier } from '../../services/suppliers';
+import { Router } from '@angular/router';
 
 interface Notification {
     id: string;
@@ -20,6 +21,8 @@ interface Notification {
     styleUrls: ['./expense.component.css']
 })
 export class ExpenseComponent implements OnInit {
+    @ViewChild('pdfFileInput') pdfFileInput!: ElementRef<HTMLInputElement>;
+    
     currentTab = 'newExpense';
     //נתוני הוצאה חדשה 
     newExpense: Partial<Expense> = {
@@ -43,7 +46,13 @@ export class ExpenseComponent implements OnInit {
     showNewSupplierForm = false;
     newSupplier: Partial<Supplier> = { name: '', phone: '', email: '', address: '' };
 
-    categories: string[] = ['ריהוט', 'נקיון', 'קופה קטנה', 'תחזוקה', 'משרד', 'רכב', 'שיווק', 'שירותים מקצועיים', 'ציוד', 'אחר'];
+    categories: string[] = ['ריהוט', 'נקיון', 'קופה קטנה', 'תחזוקה', 'משרד', 'רכב', 'שיווק', 'שירותים מקצועיים', 'ציוד', 'חשמל', 'אחר'];
+
+    // PDF Upload
+    isDragOverPdf = false;
+    isProcessingPdf = false;
+    uploadedFiles: File[] = [];
+    parsedExpenseData: any = null;
 
 
     // הגדרות
@@ -56,7 +65,7 @@ export class ExpenseComponent implements OnInit {
 
     searchTerm = '';
 
-    constructor(private expenseService: ExpenseService, private supplierService: SupplierService) { }
+    constructor(private expenseService: ExpenseService, private supplierService: SupplierService, private router: Router) { }
 
     notifications: Notification[] = [];
     showNotification(message: string, type: 'success' | 'error' | 'info') {
@@ -111,13 +120,13 @@ export class ExpenseComponent implements OnInit {
         // טעינת ספקים מהשרת
         this.supplierService.getSuppliers().subscribe({
             next: (data) => {
-                this.showNotification('טעינת ספקים מהשרת עברה בהצלחה', 'success')
+                // this.showNotification('טעינת ספקים מהשרת עברה בהצלחה', 'success')
                 this.suppliers = data
                 // לאחר טעינת ספקים, טען הוצאות כדי למפות שמות ספקים
                 this.loadExpensesAndMapSuppliers();
             },
             error: () => {
-                this.showNotification('שגיאה בטעינת ספקים מהשרת', 'error');
+                console.log('שגיאה בטעינת ספקים מהשרת');
                 this.suppliers = []
                 // גם במקרה של שגיאה, טען הוצאות (ללא ספקים)
                 this.loadExpensesAndMapSuppliers();
@@ -131,7 +140,7 @@ export class ExpenseComponent implements OnInit {
     loadExpensesAndMapSuppliers() {
         this.expenseService.getExpenses().subscribe({
             next: (data) => {
-                this.showNotification('טעינת הוצאות מהשרת עברה בהצלחה', 'success');
+                // this.showNotification('טעינת הוצאות מהשרת עברה בהצלחה', 'success');
                 console.log("data",data);
                 
                     this.expenses = (Array.isArray(data) ? data : Object.values(data)).map(expRaw => {
@@ -171,7 +180,7 @@ export class ExpenseComponent implements OnInit {
                 this.generateExpenseNumber();
             },
             error: () => {
-                this.showNotification('שגיאה בטעינת הוצאות מהשרת', 'error');
+                console.log('שגיאה בטעינת הוצאות מהשרת');
                 this.expenses = [];
                 this.settings.nextExpenseNumber = 1001;
                 this.generateExpenseNumber();
@@ -266,8 +275,10 @@ export class ExpenseComponent implements OnInit {
 
         });
     }
+    
     mapExpense(expense: Partial<Expense>): any {
         // ממיר אובייקט הוצאה מה-UI לאובייקט תואם סכמת השרת (IExpense)
+        
         return {
             id: this.generateId(),
             referenceNumber: expense.referenceNumber,
@@ -275,8 +286,9 @@ export class ExpenseComponent implements OnInit {
             supplier: expense.supplierId, // בהנחה שזה ObjectId או מחרוזת מזהה
             category: expense.category,
             amount: expense.amount,
-            vat: expense.vatRate, // שדה ה-vat בשרת הוא סכום המע"מ
+            vat: expense.vatRate, // שדה ה-vat בשרת הוא סכום המע"M
             paymentMethod: expense.paymentMethod,
+            details: expense.details,
             // attachment: expense.attachment, // אם יש תמיכה בקבצים
         };
     }
@@ -288,9 +300,6 @@ export class ExpenseComponent implements OnInit {
             .reduce((max, curr) => curr > max ? curr : max, 0);
         return maxId + 1;
 
-    }
-    navigateToHome() {
-        window.location.href = '/';
     }
     getPaymentMethodName(method: string): string {
         const methods: { [key: string]: string } = {
@@ -327,6 +336,246 @@ export class ExpenseComponent implements OnInit {
                 console.log('לא נמצא לקוח מתאים עבור clientId:', this.newExpense.supplierId);
             }
         }
+    }
 
+    // PDF Upload Functions
+    triggerPdfFileInput(): void {
+        this.pdfFileInput.nativeElement.click();
+    }
+
+    onPdfDragOver(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragOverPdf = true;
+    }
+
+    onPdfDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragOverPdf = false;
+    }
+
+    onPdfDrop(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragOverPdf = false;
+        
+        const files = Array.from(event.dataTransfer?.files || []);
+        this.handlePdfFiles(files);
+    }
+
+    onPdfFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files) {
+            const files = Array.from(input.files);
+            this.handlePdfFiles(files);
+        }
+    }
+
+    handlePdfFiles(files: File[]): void {
+        const pdfFiles = files.filter(file => file.type === 'application/pdf');
+        
+        if (pdfFiles.length === 0) {
+            this.showNotification('נא לבחור קבצי PDF בלבד', 'error');
+            return;
+        }
+
+        if (pdfFiles.length > 5) {
+            this.showNotification('ניתן להעלות עד 5 קבצים בו-זמנית', 'error');
+            return;
+        }
+
+        this.uploadedFiles = pdfFiles;
+        this.uploadPdfFiles(pdfFiles);
+    }
+
+    async uploadPdfFiles(files: File[]): Promise<void> {
+        this.isProcessingPdf = true;
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        try {
+            for (const file of files) {
+                try {
+                    await this.processPdfFile(file);
+                    successCount++;
+                } catch (error) {
+                    errorCount++;
+                    console.error('שגיאה בעיבוד קובץ:', file.name, error);
+                    this.showNotification(`שגיאה בעיבוד קובץ: ${file.name}`, 'error');
+                }
+            }
+            
+            // הצגת הודעת סיכום
+            if (successCount > 0 && errorCount === 0) {
+                this.showNotification(`${successCount} קבצים עובדו בהצלחה`, 'success');
+            } else if (successCount > 0 && errorCount > 0) {
+                this.showNotification(`עובדו ${successCount} קבצים בהצלחה, ${errorCount} קבצים נכשלו`, 'info');
+            } else if (errorCount > 0 && successCount === 0) {
+                this.showNotification('כל הקבצים נכשלו בעיבוד', 'error');
+            }
+        } catch (error) {
+            console.error('שגיאה כללית בעיבוד קבצי PDF:', error);
+            this.showNotification('שגיאה כללית בעיבוד קבצי PDF', 'error');
+        } finally {
+            this.isProcessingPdf = false;
+        }
+    }
+
+    async processPdfFile(file: File): Promise<void> {
+        console.log('📁 מעבד קובץ:', file.name, 'גודל:', file.size);
+        
+        const formData = new FormData();
+        formData.append('pdfFile', file);
+
+        console.log('🚀 שולח בקשה לשרת...');
+        
+        // קריאה לשרת לעיבוד הקובץ
+        const response = await fetch('http://localhost:3000/api/expenses/upload-pdf', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('📡 תגובה מהשרת:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ שגיאה מהשרת:', errorText);
+            throw new Error(`שגיאה בהעלאת הקובץ לשרת: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('📦 תוצאה מהשרת:', result);
+        
+        if (!result.success) {
+            console.error('❌ השרת החזיר שגיאה:', result.message);
+            throw new Error(result.message || 'שגיאה בעיבוד הקובץ');
+        }
+        
+        // עיבוד הנתונים שהתקבלו מהקובץ
+        if (result.data) {
+            console.log('✅ מעבד נתונים שחולצו...');
+            this.fillExpenseFormFromPdf(result.data, file.name);
+        }
+    }
+
+    fillExpenseFormFromPdf(pdfData: any, fileName: string): void {
+        console.log('🔄 מעבד נתונים מ-PDF:', pdfData);
+        
+        // השרת עכשיו מחזיר נתונים מובנים יותר
+        const extractedData = pdfData.extractedData || {};
+        
+        // מילוי תאריך
+        if (extractedData.date) {
+            this.newExpense.date = extractedData.date;
+            console.log('📅 תאריך עודכן:', extractedData.date);
+        }
+        
+        // מילוי סכום
+        if (extractedData.amount && extractedData.amount > 0) {
+            this.newExpense.totalAmount = extractedData.amount;
+            this.calculateAmountFromTotal();
+            console.log('💰 סכום עודכן:', extractedData.amount);
+        }
+        
+        // מילוי מספר אסמכתא
+        if (extractedData.documentNumber) {
+            this.newExpense.referenceNumber = extractedData.documentNumber;
+            console.log('🧾 מספר מסמך עודכן:', extractedData.documentNumber);
+        }
+        
+        // מילוי שם ספק
+        if (extractedData.supplier) {
+            // ניסיון למצוא ספק קיים עם שם דומה
+            const matchingSupplier = this.suppliers.find(supplier => 
+                supplier.name.includes(extractedData.supplier) || 
+                extractedData.supplier.includes(supplier.name)
+            );
+            
+            if (matchingSupplier) {
+                this.newExpense.supplierId = matchingSupplier.id;
+                this.newExpense.supplierName = matchingSupplier.name;
+                console.log('🏢 ספק קיים נמצא:', matchingSupplier.name);
+            } else {
+                // הוספת שם הספק לפרטים אם לא נמצא
+                const supplierInfo = `ספק: ${extractedData.supplier}`;
+                if (this.newExpense.details) {
+                    this.newExpense.details += ` | ${supplierInfo}`;
+                } else {
+                    this.newExpense.details = supplierInfo;
+                }
+                console.log('🏢 ספק חדש נוסף לפרטים:', extractedData.supplier);
+            }
+        }
+        
+        // מילוי קטגוריה (מהרשימה הקיימת)
+        if (extractedData.category && this.categories.includes(extractedData.category)) {
+            this.newExpense.category = extractedData.category;
+            console.log('📂 קטגוריה עודכנה:', extractedData.category);
+        }
+        
+        // מילוי מע"מ
+        if (extractedData.vatRate && extractedData.vatRate >= 0 && extractedData.vatRate <= 30) {
+            this.newExpense.vatRate = extractedData.vatRate;
+            if (this.newExpense.totalAmount) {
+                this.calculateAmountFromTotal();
+            }
+            console.log('📊 מע"מ עודכן:', extractedData.vatRate + '%');
+        }
+        
+        // מילוי אופן תשלום
+        if (extractedData.paymentMethod) {
+            const validPaymentMethods = ['cash', 'credit', 'check', 'transfer'];
+            if (validPaymentMethods.includes(extractedData.paymentMethod)) {
+                this.newExpense.paymentMethod = extractedData.paymentMethod;
+                console.log('💳 אופן תשלום עודכן:', extractedData.paymentMethod);
+            }
+        }
+        
+        // הוספת שם הקובץ לפרטים
+        const fileInfo = `מקור: ${fileName}`;
+        if (this.newExpense.details) {
+            this.newExpense.details += ` | ${fileInfo}`;
+        } else {
+            this.newExpense.details = fileInfo;
+        }
+
+        this.showNotification(`מידע חולץ מהקובץ: ${fileName}`, 'success');
+        
+        // לוג של כל השדות שעודכנו
+        console.log('✅ טופס ההוצאה עודכן עם הנתונים הבאים:', {
+            date: this.newExpense.date,
+            amount: this.newExpense.amount,
+            totalAmount: this.newExpense.totalAmount,
+            supplier: this.newExpense.supplierName,
+            category: this.newExpense.category,
+            vatRate: this.newExpense.vatRate,
+            paymentMethod: this.newExpense.paymentMethod,
+            documentNumber: this.newExpense.referenceNumber
+        });
+    }
+
+    calculateAmountFromTotal(): void {
+        if (this.newExpense.totalAmount && this.newExpense.vatRate) {
+            // חישוב סכום לפני מע"מ מהסכום הכולל
+            const vatMultiplier = 1 + (this.newExpense.vatRate / 100);
+            this.newExpense.amount = this.newExpense.totalAmount / vatMultiplier;
+            this.newExpense.vatAmount = this.newExpense.totalAmount - this.newExpense.amount;
+        }
+    }
+
+    removePdfFile(index: number): void {
+        this.uploadedFiles.splice(index, 1);
+    }
+
+    clearAllPdfFiles(): void {
+        this.uploadedFiles = [];
+        this.parsedExpenseData = null;
+    }
+
+    // ניווט לעמוד הראשי
+    navigateToHome() {
+        this.router.navigate(['/']);
     }
 }
