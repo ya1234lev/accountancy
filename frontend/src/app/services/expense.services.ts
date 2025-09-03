@@ -36,8 +36,8 @@ export class ExpenseService {
     }
 
     addExpense(expense: Partial<Expense>): Observable<Expense> {
-        console.log("expense 1",expense);
-        
+        console.log("expense 1", expense);
+
         return this.http.post<Expense>(this.apiUrl, expense);
     }
 
@@ -47,5 +47,11 @@ export class ExpenseService {
 
     deleteExpense(id: string): Observable<any> {
         return this.http.delete(`${this.apiUrl}/${id}`);
+    }
+
+    uploadPdf(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('pdfFile', file);
+        return this.http.post<any>(`${this.apiUrl}/upload-pdf`, formData);
     }
 }
