@@ -80,7 +80,7 @@ export class ExpenseComponent implements OnInit {
         }, 100);
         setTimeout(() => {
             this.removeNotification(notification.id);
-        }, 2000);
+        }, 5000);
     }
 
     removeNotification(id: string) {
@@ -373,6 +373,7 @@ export class ExpenseComponent implements OnInit {
 
     handlePdfFiles(files: File[]): void {
         const pdfFiles = files.filter(file => file.type === 'application/pdf');
+        const noPdfFiles = files.filter(file => file.type !== 'application/pdf');
         
         if (pdfFiles.length === 0) {
             this.showNotification('נא לבחור קבצי PDF בלבד', 'error');
@@ -382,6 +383,9 @@ export class ExpenseComponent implements OnInit {
         if (pdfFiles.length > 5) {
             this.showNotification('ניתן להעלות עד 5 קבצים בו-זמנית', 'error');
             return;
+        }
+         if (noPdfFiles.length > 0) {
+            this.showNotification(`${noPdfFiles.length} מהקבצים שנבחרו אינם קבצי PDF. ניתן להעלות קבצי PDF בלבד`, 'error');
         }
 
         this.uploadedFiles = pdfFiles;
@@ -395,7 +399,7 @@ export class ExpenseComponent implements OnInit {
         let errorCount = 0;
         
         try {
-            for (const file of files) {
+            for (const file of files) {                
                 try {
                     await this.processPdfFile(file);
                     successCount++;
@@ -425,37 +429,32 @@ export class ExpenseComponent implements OnInit {
     async processPdfFile(file: File): Promise<void> {
         console.log('📁 מעבד קובץ:', file.name, 'גודל:', file.size);
         
-        const formData = new FormData();
-        formData.append('pdfFile', file);
-
         console.log('🚀 שולח בקשה לשרת...');
         
-        // קריאה לשרת לעיבוד הקובץ
-        const response = await fetch('http://localhost:3000/api/expenses/upload-pdf', {
-            method: 'POST',
-            body: formData
-        });
-
-        console.log('📡 תגובה מהשרת:', response.status, response.statusText);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ שגיאה מהשרת:', errorText);
-            throw new Error(`שגיאה בהעלאת הקובץ לשרת: ${response.status} ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        console.log('📦 תוצאה מהשרת:', result);
-        
-        if (!result.success) {
-            console.error('❌ השרת החזיר שגיאה:', result.message);
-            throw new Error(result.message || 'שגיאה בעיבוד הקובץ');
-        }
-        
-        // עיבוד הנתונים שהתקבלו מהקובץ
-        if (result.data) {
-            console.log('✅ מעבד נתונים שחולצו...');
-            this.fillExpenseFormFromPdf(result.data, file.name);
+        try {
+            // קריאה לשרת דרך השירות
+            const result = await this.expenseService.uploadPdf(file).toPromise();
+            
+            console.log('📦 תוצאה מהשרת:', result);
+            
+            if (!result.success) {
+                console.error('❌ השרת החזיר שגיאה:', result.message);
+                throw new Error(result.message || 'שגיאה בעיבוד הקובץ');
+            }
+            
+            // עיבוד הנתונים שהתקבלו מהקובץ
+            if (result.data) {
+                console.log('✅ מעבד נתונים שחולצו...');
+                this.fillExpenseFormFromPdf(result.data, file.name);
+            }
+        } catch (error: any) {
+            console.error('❌ שגיאה בהעלאת הקובץ:', error);
+            
+            if (error.status) {
+                throw new Error(`שגיאה בהעלאת הקובץ לשרת: ${error.status} ${error.statusText || ''}`);
+            } else {
+                throw new Error(error.message || 'שגיאה בהעלאת הקובץ');
+            }
         }
     }
 
@@ -463,10 +462,11 @@ export class ExpenseComponent implements OnInit {
         console.log('🔄 מעבד נתונים מ-PDF:', pdfData);
         
         // השרת עכשיו מחזיר נתונים מובנים יותר
-        const extractedData = pdfData.extractedData || {};
-        
+        const extractedData = pdfData.extractedData || {};        
         // מילוי תאריך
         if (extractedData.date) {
+            console.log("extractedData.date",extractedData.date);
+            
             this.newExpense.date = extractedData.date;
             console.log('📅 תאריך עודכן:', extractedData.date);
         }
