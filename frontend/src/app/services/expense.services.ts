@@ -36,8 +36,8 @@ export class ExpenseService {
     }
 
     addExpense(expense: Partial<Expense>): Observable<Expense> {
-        console.log("expense 1", expense);
-
+        console.log("expense 1",expense);
+        
         return this.http.post<Expense>(this.apiUrl, expense);
     }
 
@@ -49,9 +49,8 @@ export class ExpenseService {
         return this.http.delete(`${this.apiUrl}/${id}`);
     }
 
-    uploadPdf(file: File): Observable<any> {
-        const formData = new FormData();
-        formData.append('pdfFile', file);
-        return this.http.post<any>(`${this.apiUrl}/upload-pdf`, formData);
+    // העלאת קבצי PDF מרובים ויצירת הוצאות אוטומטית
+    uploadMultiplePdfs(formData: FormData): Promise<any> {
+        return this.http.post<any>(`${this.apiUrl}/upload-multiple-pdfs`, formData).toPromise();
     }
 }

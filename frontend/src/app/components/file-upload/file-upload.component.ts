@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TransactionService } from '../../services/transaction.service';
+import { ExpenseService } from '../../services/expense.services';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -13,60 +14,166 @@ import * as XLSX from 'xlsx';
 export class FileUploadComponent {
   @ViewChild('incomeFileInput') incomeFileInput!: ElementRef<HTMLInputElement>;
   @ViewChild('expenseFileInput') expenseFileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('pdfFileInput') pdfFileInput!: ElementRef<HTMLInputElement>;
 
   isDragOverIncome = false;
   isDragOverExpense = false;
+  isDragOverPdf = false;
   isProcessing = false;
 
-  constructor(private transactionService: TransactionService) { }
+  constructor(
+    private transactionService: TransactionService,
+    private expenseService: ExpenseService
+  ) { }
 
-  triggerFileInput(type: 'income' | 'expense'): void {
+  triggerFileInput(type: 'income' | 'expense' | 'pdf'): void {
     if (type === 'income') {
       this.incomeFileInput.nativeElement.click();
-    } else {
+    } else if (type === 'expense') {
       this.expenseFileInput.nativeElement.click();
+    } else if (type === 'pdf') {
+      this.pdfFileInput.nativeElement.click();
     }
   }
 
-  onDragOver(event: DragEvent, type: 'income' | 'expense'): void {
+  onDragOver(event: DragEvent, type: 'income' | 'expense' | 'pdf'): void {
     event.preventDefault();
     event.stopPropagation();
     if (type === 'income') {
       this.isDragOverIncome = true;
-    } else {
+    } else if (type === 'expense') {
       this.isDragOverExpense = true;
+    } else if (type === 'pdf') {
+      this.isDragOverPdf = true;
     }
   }
 
-  onDragLeave(event: DragEvent, type: 'income' | 'expense'): void {
+  onDragLeave(event: DragEvent, type: 'income' | 'expense' | 'pdf'): void {
     event.preventDefault();
     event.stopPropagation();
     if (type === 'income') {
       this.isDragOverIncome = false;
-    } else {
+    } else if (type === 'expense') {
       this.isDragOverExpense = false;
+    } else if (type === 'pdf') {
+      this.isDragOverPdf = false;
     }
   }
 
-  onDrop(event: DragEvent, type: 'income' | 'expense'): void {
+  onDrop(event: DragEvent, type: 'income' | 'expense' | 'pdf'): void {
     event.preventDefault();
     event.stopPropagation();
     if (type === 'income') {
       this.isDragOverIncome = false;
-    } else {
+    } else if (type === 'expense') {
       this.isDragOverExpense = false;
+    } else if (type === 'pdf') {
+      this.isDragOverPdf = false;
     }
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      this.handleFile(files[0], type);
+      if (type === 'pdf') {
+        this.handlePdfFiles(files);
+      } else {
+        this.handleFile(files[0], type);
+      }
     }
   }
 
-  onFileSelected(event: Event, type: 'income' | 'expense'): void {
+  onFileSelected(event: Event, type: 'income' | 'expense' | 'pdf'): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.handleFile(input.files[0], type);
+      if (type === 'pdf') {
+        this.handlePdfFiles(input.files);
+      } else {
+        this.handleFile(input.files[0], type);
+      }
+    }
+  }
+
+  private async handlePdfFiles(files: FileList): Promise<void> {
+    // בדיקת מספר הקבצים
+    if (files.length > 10) {
+      this.transactionService.showNotification('ניתן להעלות מקסימום 10 קבצי PDF בו זמנית', 'error');
+      return;
+    }
+
+    // בדיקת סוג ויודל הקבצים
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    const validFiles: File[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // בדיקת סוג הקובץ
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        this.transactionService.showNotification(`הקובץ ${file.name} אינו קובץ PDF תקין`, 'error');
+        return;
+      }
+      
+      // בדיקת גודל הקובץ
+      if (file.size > maxSize) {
+        this.transactionService.showNotification(`הקובץ ${file.name} גדול מדי. גודל מקסימלי: 50MB`, 'error');
+        return;
+      }
+      
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      this.transactionService.showNotification('לא נמצאו קבצי PDF תקינים', 'error');
+      return;
+    }
+
+    this.isProcessing = true;
+
+    try {
+      const formData = new FormData();
+      validFiles.forEach(file => {
+        formData.append('pdfFiles', file);
+      });
+
+      this.transactionService.showNotification(`מעבד ${validFiles.length} קבצי PDF...`, 'info');
+
+      const response = await this.expenseService.uploadMultiplePdfs(formData);
+      
+      if (response.success) {
+        const { successfullyProcessed, errorsCount } = response.data;
+        
+        if (successfullyProcessed > 0) {
+          this.transactionService.showNotification(
+            `הצלחה! נוצרו ${successfullyProcessed} הוצאות חדשות מתוך ${validFiles.length} קבצים`,
+            'success'
+          );
+          
+          // ניווט לעמוד רשימת ההוצאות כדי לראות את התוצאות החדשות
+          setTimeout(() => {
+            window.location.href = '/expense'; // רענון העמוד וניווט לרשימת הוצאות
+          }, 2000); // המתנה של 2 שניות כדי לראות את ההודעה
+        }
+        
+        if (errorsCount > 0) {
+          this.transactionService.showNotification(
+            `${errorsCount} קבצים לא עובדו בהצלחה`,
+            'error'
+          );
+        }
+
+        // הצגת פרטים מפורטים בקונסול
+        console.log('תוצאות עיבוד קבצי PDF:', response.data);
+        
+      } else {
+        this.transactionService.showNotification('שגיאה בעיבוד קבצי PDF', 'error');
+      }
+      
+    } catch (error) {
+      console.error('Error uploading PDF files:', error);
+      this.transactionService.showNotification('שגיאה בהעלאת קבצי PDF', 'error');
+    } finally {
+      this.isProcessing = false;
+      // איפוס השדה
+      this.pdfFileInput.nativeElement.value = '';
     }
   }
 

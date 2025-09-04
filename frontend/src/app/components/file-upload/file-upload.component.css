@@ -35,7 +35,8 @@
 
 /* Upload Area */
 .upload-area1,
-.upload-area2{
+.upload-area2,
+.upload-area3{
   width: 100%;
   min-height: 100px;
   max-height: 250px;
@@ -50,21 +51,21 @@
   position: relative;
 }
 
-.upload-area1:hover, 
-.upload-area2:hover {
+.upload-area1:hover,
+.upload-area2:hover,
+.upload-area3:hover {
   border-color: var(--accent-color);
   background: rgba(15, 43, 119, 0.05);
 }
 
-.upload-area1.drag-over1 ,
-.upload-area2.drag-over2 {
+.upload-area1.drag-over1,
+.upload-area2.drag-over2,
+.upload-area3.drag-over3 {
   border-color: var(--accent-color);
   background: rgba(15, 43, 119, 0.1);
   box-shadow: 0 0 0 3px rgba(15, 43, 119, 0.1);
   transform: scale(1.02);
-}
-
-.file-input {
+}.file-input {
   display: none;
 }
 
