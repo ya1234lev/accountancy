@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { TransactionService, NotificationMessage } from '../../services/transaction.service';
+import { CombinedTransactionService, NotificationMessage } from '../../services/combined-transaction.service';
 
 @Component({
   selector: 'app-notifications',
@@ -12,7 +12,7 @@ import { TransactionService, NotificationMessage } from '../../services/transact
       <div *ngFor="let notification of notifications" 
            class="notification" 
            [class]="'notification--' + notification.type"
-           [class.notification--visible]="notification.visible"
+           [class.notification--visible]="true"
            (click)="removeNotification(notification.id)">
         <div class="notification-content">
           <svg class="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -143,7 +143,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   notifications: NotificationMessage[] = [];
   private destroy$ = new Subject<void>();
 
-  constructor(private transactionService: TransactionService) {}
+  constructor(private transactionService: CombinedTransactionService) {}
 
   ngOnInit(): void {
     this.transactionService.notifications$

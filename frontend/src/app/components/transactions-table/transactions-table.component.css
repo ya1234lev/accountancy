@@ -60,10 +60,16 @@
 /* Table */
 .table-container {
   overflow-x: auto;
+  max-width: 100%;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .data-table {
   width: 100%;
+  min-width: 1200px; /* מינימום רוחב לטבלה המורחבת */
   border-collapse: collapse;
   font-size: 0.875rem;
 }
@@ -71,20 +77,106 @@
 .data-table th {
   background: var(--gray-50);
   border-bottom: 1px solid var(--border-color);
-  padding: 0.875rem 1rem;
+  padding: 0.75rem 0.5rem;
   text-align: right;
   font-weight: 600;
   color: var(--gray-700);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
 }
 
 .data-table td {
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   border-bottom: 1px solid var(--gray-100);
   text-align: right;
   vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* רוחב עמודות ספציפי */
+.data-table th:nth-child(1), .data-table td:nth-child(1) { width: 90px; } /* תאריך */
+.data-table th:nth-child(2), .data-table td:nth-child(2) { width: 80px; } /* סוג */
+.data-table th:nth-child(3), .data-table td:nth-child(3) { width: 150px; max-width: 150px; } /* תיאור */
+.data-table th:nth-child(4), .data-table td:nth-child(4) { width: 100px; } /* קטגוריה */
+.data-table th:nth-child(5), .data-table td:nth-child(5) { width: 100px; } /* סכום בסיסי */
+.data-table th:nth-child(6), .data-table td:nth-child(6) { width: 80px; } /* מע"מ */
+.data-table th:nth-child(7), .data-table td:nth-child(7) { width: 100px; } /* סה"כ */
+.data-table th:nth-child(8), .data-table td:nth-child(8) { width: 100px; } /* אמצעי תשלום */
+.data-table th:nth-child(9), .data-table td:nth-child(9) { width: 120px; } /* לקוח/ספק */
+.data-table th:nth-child(10), .data-table td:nth-child(10) { width: 120px; max-width: 120px; } /* פרטים נוספים */
+.data-table th:nth-child(11), .data-table td:nth-child(11) { width: 90px; } /* מזהה */
+.data-table th:nth-child(12), .data-table td:nth-child(12) { width: 80px; } /* פעולות */
+
+/* סגנונות לתוכן התאים */
+.cell--description,
+.cell--details {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.transaction-id {
+  font-family: monospace;
+  font-size: 0.75rem;
+  background: var(--gray-100);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  color: var(--gray-600);
+  display: inline-block;
+}
+
+.cell--vat {
+  color: var(--gray-600);
+  font-size: 0.85rem;
+}
+
+.cell--total strong {
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .data-table {
+    min-width: 1000px;
+  }
+  
+  .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 120px; max-width: 120px; }
+  .data-table th:nth-child(10), .data-table td:nth-child(10) { width: 100px; max-width: 100px; }
+}
+
+@media (max-width: 1200px) {
+  .data-table {
+    min-width: 900px;
+    font-size: 0.8rem;
+  }
+  
+  .data-table th, .data-table td {
+    padding: 0.5rem 0.3rem;
+  }
+  
+  .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 100px; max-width: 100px; }
+  .data-table th:nth-child(9), .data-table td:nth-child(9) { width: 100px; }
+  .data-table th:nth-child(10), .data-table td:nth-child(10) { width: 80px; max-width: 80px; }
+}
+
+/* הודעה למסכים קטנים מאוד */
+@media (max-width: 768px) {
+  .table-container::before {
+    content: "💡 גלול ימינה כדי לראות עמודות נוספות";
+    display: block;
+    padding: 0.5rem 1rem;
+    background: var(--blue-50);
+    color: var(--blue-600);
+    border-bottom: 1px solid var(--blue-200);
+    font-size: 0.875rem;
+    text-align: center;
+  }
 }
 
 .data-table tr:not(.row--income):not(.row--expense):hover {
