@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createExpense, getExpense, getExpenses, updateExpense, deleteExpense, deleteAllExpenses, uploadPdf, upload } from '../controllers/expenseController';
+import { createExpense, getExpense, getExpenses, updateExpense, deleteExpense, deleteAllExpenses, uploadPdf, uploadMultiplePdfs, upload } from '../controllers/expenseController';
 
 const router = Router();
 
@@ -28,6 +28,31 @@ router.post('/expenses/upload-pdf', (req, res, next) => {
             });
         }
         uploadPdf(req, res);
+    });
+});
+
+// העלאת קבצי PDF מרובים ויצירת הוצאות אוטומטית
+router.post('/expenses/upload-multiple-pdfs', (req, res, next) => {
+    upload.array('pdfFiles', 10)(req, res, (err) => {
+        if (err) {
+            if (err.code === 'LIMIT_FILE_COUNT') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'יותר מדי קבצים - מקסימום 10 קבצים'
+                });
+            }
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'קובץ גדול מדי - מקסימום 50MB לכל קובץ'
+                });
+            }
+            return res.status(400).json({
+                success: false,
+                message: 'שגיאה בהעלאת הקבצים: ' + err.message
+            });
+        }
+        uploadMultiplePdfs(req, res);
     });
 });
 

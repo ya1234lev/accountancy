@@ -48,4 +48,9 @@ export class ExpenseService {
     deleteExpense(id: string): Observable<any> {
         return this.http.delete(`${this.apiUrl}/${id}`);
     }
+
+    // העלאת קבצי PDF מרובים ויצירת הוצאות אוטומטית
+    uploadMultiplePdfs(formData: FormData): Promise<any> {
+        return this.http.post<any>(`${this.apiUrl}/upload-multiple-pdfs`, formData).toPromise();
+    }
 }
