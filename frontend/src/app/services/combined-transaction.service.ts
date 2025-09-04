@@ -69,15 +69,10 @@ export class CombinedTransactionService {
                     suppliersMap.set(supplier.id, supplier);
                 });
 
-                console.log("clients map:", clientsMap);
-                console.log("clients map size:", clientsMap.size);
-                console.log("suppliers map:", suppliersMap);
-                console.log("suppliers map size:", suppliersMap.size);
 
                 // המרת הכנסות לעסקאות
-                console.log("incomes data:", incomes);
-                console.log("clients data:", clients);
                 incomes.forEach((income: any) => {
+                    
                     // חיפוש שם הלקוח לפי המזהה
                     const clientName = this.getClientName(income.customer, clientsMap);
 
@@ -98,8 +93,6 @@ export class CombinedTransactionService {
                 });
 
                 // המרת הוצאות לעסקאות
-                console.log("expenses data:", expenses);
-                console.log("suppliers data:", suppliers);
                 expenses.forEach((expense: any) => {
                     // חיפוש שם הספק לפי המזהה
                     const supplierName = this.getSupplierName(expense.supplier, suppliersMap);

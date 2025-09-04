@@ -308,7 +308,6 @@ export class IncomeComponent implements OnInit {
         this.settings.nextReceiptNumber++;
         this.saveSettings();
         this.addIncome(receipt)
-        console.log('הקבלה נשמרה בהצלחה');
         this.resetForm();
     }
 
@@ -500,7 +499,6 @@ export class IncomeComponent implements OnInit {
             const client = this.clients.find(c => c.id === receipt.clientId);
             if (client && !isNaN(Number(client.id))) {
                 customerId = Number(client.id);
-                console.log("customerId", customerId);
 
             }
         }
@@ -546,7 +544,6 @@ export class IncomeComponent implements OnInit {
 
     addIncome(receipt: Receipt) {
         const income = this.mapReceiptToIncome(receipt);
-        console.log("uncome", income);
 
         this.incomeService.addIncome(income).subscribe({
             next: (createdIncome: any) => {

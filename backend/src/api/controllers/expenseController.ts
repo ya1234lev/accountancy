@@ -56,7 +56,6 @@ export const upload = multer({
 
 export const createExpense = async (req: Request, res: Response) => {
   try {
-    console.log("req.body", req.body);
 
     const expense = await expenseService.createExpense(req.body);
     res.status(201).json(expense);

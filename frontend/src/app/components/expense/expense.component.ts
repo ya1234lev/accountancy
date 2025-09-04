@@ -140,7 +140,6 @@ export class ExpenseComponent implements OnInit {
         this.expenseService.getExpenses().subscribe({
             next: (data) => {
                 // this.showNotification('טעינת הוצאות מהשרת עברה בהצלחה', 'success');
-                console.log("data",data);
                 
                     this.expenses = (Array.isArray(data) ? data : Object.values(data)).map(expRaw => {
                         const exp = expRaw as any;
@@ -216,7 +215,6 @@ export class ExpenseComponent implements OnInit {
         //     this.newExpense.supplierName = supplier.name;
         // }
         const expense = this.mapExpense(this.newExpense);
-        console.log("expense", expense);
 
         this.expenseService.addExpense(expense).subscribe({
             next: () => {
