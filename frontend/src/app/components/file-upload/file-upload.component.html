@@ -105,5 +105,59 @@
                 </details>
             </div>
         </div>
+
+        <!-- PDF Upload Section -->
+        <div class="card-body">
+            <!-- Upload Area for PDF -->
+            <div class="upload-area3" [class.drag-over3]="isDragOverPdf" (dragover)="onDragOver($event, 'pdf')"
+                (dragleave)="onDragLeave($event, 'pdf')" (drop)="onDrop($event, 'pdf')" (click)="triggerFileInput('pdf')">
+                <input #pdfFileInput type="file" accept=".pdf" multiple (change)="onFileSelected($event, 'pdf')" class="file-input">
+                <div class="upload-content">
+                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                    <h4>העלה חשבוניות PDF</h4>
+                    <p>לחץ כאן או גרור קבצים לאזור זה</p>
+                    <small>פורמטים נתמכים: PDF (.pdf)</small>
+                    <small>עד 10 קבצים בו זמנית | גודל מקסימלי: 50MB לכל קובץ</small>
+                </div>
+            </div>
+
+            <!-- Processing State -->
+            <div *ngIf="isProcessing" class="processing-state">
+                <svg class="spinner" width="24" height="24" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                        <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416"
+                            repeatCount="indefinite" />
+                        <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416"
+                            repeatCount="indefinite" />
+                    </circle>
+                </svg>
+                <span>מעבד קבצי PDF...</span>
+            </div>
+
+            <!-- File Format Info -->
+            <div class="file-format-info">
+                <details>
+                    <summary>חילוץ נתונים אוטומטי מחשבוניות PDF</summary>
+                    <div class="format-details">
+                        <h5>קבצי PDF:</h5>
+                        <p>המערכת תחלץ אוטומטיות:</p>
+                        <ul>
+                            <li>תאריך החשבונית</li>
+                            <li>סכום ההוצאה</li>
+                            <li>שם הספק</li>
+                            <li>קטגוריית ההוצאה</li>
+                            <li>אחוז מע"מ</li>
+                            <li>מספר מסמך</li>
+                            <li>אופן התשלום</li>
+                        </ul>
+                        <p><strong>כל קובץ יווצר אוטומטית כהוצאה חדשה במערכת!</strong></p>
+                        <small>אם הנתונים לא זוהו נכון, ניתן לערוך אותם אחר כך ברשימת ההוצאות</small>
+                    </div>
+                </details>
+            </div>
+        </div>
     </div>
 </section>
