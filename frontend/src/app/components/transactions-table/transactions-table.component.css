@@ -9,6 +9,26 @@
   color: var(--primary-color, #1976d2);
   font-weight: bold;
 }
+
+.loading-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color, #1976d2);
+  font-weight: normal;
+  font-size: 0.9rem;
+  margin-right: 1rem;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .card {
   background: var(--white);
   border: 1px solid var(--border-color);

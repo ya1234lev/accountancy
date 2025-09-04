@@ -34,9 +34,17 @@ export interface NotificationMessage {
 export class CombinedTransactionService {
     private transactionsSubject = new BehaviorSubject<CombinedTransaction[]>([]);
     private notificationsSubject = new BehaviorSubject<NotificationMessage[]>([]);
+    private loadingSubject = new BehaviorSubject<boolean>(false);
+    
+    // Cache for clients and suppliers to avoid repeated API calls
+    private clientsCache = new Map<string, any>();
+    private suppliersCache = new Map<string, any>();
+    private cacheTimestamp: number = 0;
+    private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
     public transactions$ = this.transactionsSubject.asObservable();
     public notifications$ = this.notificationsSubject.asObservable();
+    public loading$ = this.loadingSubject.asObservable();
 
     constructor(
         private expenseService: ExpenseService,
@@ -47,59 +55,89 @@ export class CombinedTransactionService {
     }
 
     private loadTransactions(): void {
+        this.loadingSubject.next(true);
+        this.showNotification('info', 'טוען נתונים...', 0);
+
+        // בדיקה אם יש cache תקף
+        const now = Date.now();
+        const needsRefresh = now - this.cacheTimestamp > this.CACHE_DURATION;
+
+        const clientsRequest = needsRefresh || this.clientsCache.size === 0 
+            ? this.incomeService.getClients().pipe(
+                tap((clients: any[]) => {
+                    this.clientsCache.clear();
+                    clients.forEach(client => this.clientsCache.set(client.id, client));
+                }),
+                catchError(() => of([]))
+              )
+            : of(Array.from(this.clientsCache.values()));
+
+        const suppliersRequest = needsRefresh || this.suppliersCache.size === 0
+            ? this.supplierService.getSuppliers().pipe(
+                tap((suppliers: any[]) => {
+                    this.suppliersCache.clear();
+                    suppliers.forEach(supplier => this.suppliersCache.set(supplier.id, supplier));
+                }),
+                catchError(() => of([]))
+              )
+            : of(Array.from(this.suppliersCache.values()));
+
+        if (needsRefresh) {
+            this.cacheTimestamp = now;
+        }
+
         // טוען הכנסות, הוצאות, לקוחות וספקים במקביל
         forkJoin({
             incomes: this.incomeService.getIncomes().pipe(catchError(() => of([]))),
             expenses: this.expenseService.getExpenses().pipe(catchError(() => of([]))),
-            clients: this.incomeService.getClients().pipe(catchError(() => of([]))),
-            suppliers: this.supplierService.getSuppliers().pipe(catchError(() => of([])))
+            clients: clientsRequest,
+            suppliers: suppliersRequest
         }).pipe(
             map(({ incomes, expenses, clients, suppliers }: { incomes: any[], expenses: any[], clients: any[], suppliers: any[] }) => {
+                const startTime = performance.now();
                 const transactions: CombinedTransaction[] = [];
+
+                // טיפול במקרה שהנתונים מגיעים מה-cache
+                const clientsArray = Array.isArray(clients) ? clients : Array.from(this.clientsCache.values());
+                const suppliersArray = Array.isArray(suppliers) ? suppliers : Array.from(this.suppliersCache.values());
 
                 // יצירת מפה של לקוחות לפי ID לחיפוש מהיר
                 const clientsMap = new Map<string, any>();
-                clients.forEach((client: any) => {
+                clientsArray.forEach((client: any) => {
                     clientsMap.set(client.id, client);
                 });
 
                 // יצירת מפה של ספקים לפי ID לחיפוש מהיר
                 const suppliersMap = new Map<string, any>();
-                suppliers.forEach((supplier: any) => {
+                suppliersArray.forEach((supplier: any) => {
                     suppliersMap.set(supplier.id, supplier);
                 });
 
-
-                // המרת הכנסות לעסקאות
-                incomes.forEach((income: any) => {
-                    
-                    // חיפוש שם הלקוח לפי המזהה
+                // עיבוד הכנסות עם batching
+                this.processBatch(incomes, (income: any) => {
                     const clientName = this.getClientName(income.customer, clientsMap);
-
-                    transactions.push({
+                    return {
                         id: income.id || income.receiptNumber,
-                        type: 'income',
+                        type: 'income' as const,
                         date: income.date,
                         amount: income.amount,
                         description: `קבלה מספר ${income.receiptNumber}`,
                         category: '',
                         clientName: clientName,
-                        paymentMethod: this.getPaymentMethodLabel(income.payment.method || ''),
+                        paymentMethod: this.getPaymentMethodLabel(income.payment?.method || ''),
                         details: income.details,
                         vatAmount: income.vat,
                         totalAmount: income.amount + income.vat,
                         originalData: income
-                    });
-                });
+                    };
+                }, transactions);
 
-                // המרת הוצאות לעסקאות
-                expenses.forEach((expense: any) => {
-                    // חיפוש שם הספק לפי המזהה
+                // עיבוד הוצאות עם batching
+                this.processBatch(expenses, (expense: any) => {
                     const supplierName = this.getSupplierName(expense.supplier, suppliersMap);
-
-                    transactions.push({
+                    return {
                         id: expense.id,
-                        type: 'expense',
+                        type: 'expense' as const,
                         date: expense.date,
                         amount: expense.amount,
                         description: `הוצאה - ${expense.referenceNumber}`,
@@ -110,13 +148,18 @@ export class CombinedTransactionService {
                         vatAmount: expense.vatAmount,
                         totalAmount: expense.totalAmount,
                         originalData: expense
-                    });
-                });
+                    };
+                }, transactions);
+
+                const endTime = performance.now();
+                console.log(`עיבוד ${transactions.length} עסקאות לקח ${Math.round(endTime - startTime)}ms`);
 
                 return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             }),
             tap((transactions: CombinedTransaction[]) => {
                 this.transactionsSubject.next(transactions);
+                this.loadingSubject.next(false);
+                this.removeNotification('loading'); // הסרת הודעת הטעינה
 
                 // ספירת עסקאות עם לקוחות וספקים לא מזוהים
                 const unknownClientsCount = transactions.filter(t =>
@@ -127,7 +170,7 @@ export class CombinedTransactionService {
                     t.type === 'expense' && t.supplierName?.includes('ספק לא נמצא')
                 ).length;
 
-                let message = `נטענו ${transactions.length} עסקאות מהשרת`;
+                let message = `נטענו ${transactions.length} עסקאות בהצלחה`;
                 if (unknownClientsCount > 0 || unknownSuppliersCount > 0) {
                     const unknownParts = [];
                     if (unknownClientsCount > 0) unknownParts.push(`${unknownClientsCount} עם לקוחות לא מזוהים`);
@@ -135,11 +178,13 @@ export class CombinedTransactionService {
                     message += ` (${unknownParts.join(', ')})`;
                 }
 
-                this.showNotification('success', message);
+                this.showNotification('success', message, 3000);
             })
         ).subscribe({
             error: (error) => {
                 console.error('שגיאה בטעינת עסקאות:', error);
+                this.loadingSubject.next(false);
+                this.removeNotification('loading');
                 this.showNotification('error', 'שגיאה בטעינת נתונים מהשרת');
                 // במקרה של שגיאה, נציג רשימה ריקה
                 this.transactionsSubject.next([]);
@@ -168,6 +213,20 @@ export class CombinedTransactionService {
     private getSupplierName(supplierId: string, suppliersMap: Map<string, any>): string {
         const supplier = suppliersMap.get(supplierId.toString());
         return supplier ? supplier.name : `ספק לא נמצא (${supplierId})`;
+    }
+
+    // עיבוד נתונים בחבילות לשיפור ביצועים
+    private processBatch<T>(items: T[], processor: (item: T) => CombinedTransaction, results: CombinedTransaction[], batchSize: number = 100): void {
+        for (let i = 0; i < items.length; i += batchSize) {
+            const batch = items.slice(i, i + batchSize);
+            batch.forEach(item => {
+                try {
+                    results.push(processor(item));
+                } catch (error) {
+                    console.warn('שגיאה בעיבוד פריט:', error, item);
+                }
+            });
+        }
     }
 
     deleteTransaction(index: number): void {
@@ -269,7 +328,7 @@ export class CombinedTransactionService {
 
     public showNotification(type: NotificationMessage['type'], message: string, duration: number = 5000): void {
         const notification: NotificationMessage = {
-            id: Date.now().toString(),
+            id: type === 'info' && message.includes('טוען') ? 'loading' : Date.now().toString(),
             type,
             message,
             timestamp: new Date(),

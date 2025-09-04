@@ -13,6 +13,7 @@ import { CombinedTransactionService, CombinedTransaction } from '../../services/
 export class TransactionsTableComponent implements OnInit, OnDestroy {
   transactions: CombinedTransaction[] = [];
   displayedTransactions: CombinedTransaction[] = [];
+  isLoading: boolean = false;
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   currentDisplayCount: number = 10;
@@ -24,6 +25,14 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
   constructor(private transactionService: CombinedTransactionService) {}
 
   ngOnInit() {
+    // האזנה לטעינת נתונים
+    this.transactionService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => {
+        this.isLoading = loading;
+      });
+
+    // האזנה לעסקאות
     this.transactionService.transactions$
       .pipe(takeUntil(this.destroy$))
       .subscribe((transactions: CombinedTransaction[]) => {

@@ -24,8 +24,28 @@ export const getIncome = async (req: Request, res: Response) => {
 
 export const getIncomes = async (req: Request, res: Response) => {
   try {
-    const incomes = await incomeService.getAllIncomes();
-    res.json(incomes);
+    const { 
+      page = 1, 
+      limit = 100, 
+      startDate, 
+      endDate, 
+      minAmount, 
+      maxAmount, 
+      customer 
+    } = req.query;
+
+    const options = {
+      page: parseInt(page as string),
+      limit: parseInt(limit as string),
+      startDate: startDate as string,
+      endDate: endDate as string,
+      minAmount: minAmount ? parseFloat(minAmount as string) : undefined,
+      maxAmount: maxAmount ? parseFloat(maxAmount as string) : undefined,
+      customer: customer as string
+    };
+
+    const result = await incomeService.getAllIncomes(options);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error getting incomes', error });
   }
