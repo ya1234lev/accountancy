@@ -72,7 +72,7 @@
                 <!-- העלאת קובץ PDF -->
                 <div class="card pdf-upload-card-compact">
                     <div class="card-header">
-                        <h3 class="card-title-small">העלאת PDF חשבונית</h3>
+                        <h3 class="card-title-small">העלאת אסמכתא PDF</h3>
                     </div>
                     <div class="card-body">
                         <div class="pdf-upload-area-compact" 
@@ -81,7 +81,8 @@
                              (dragover)="onPdfDragOver($event)"
                              (dragleave)="onPdfDragLeave($event)"
                              (drop)="onPdfDrop($event)"
-                             (click)="triggerPdfFileInput()">
+                             (click)="triggerPdfFileInput()"
+                             >
                             
                             <input #pdfFileInput 
                                    type="file" 
@@ -96,7 +97,7 @@
                                 </svg>
                                 <div class="upload-text">
                                     <span class="upload-title">גרור PDF או לחץ לבחירה</span>
-                                    <small>מילוי אוטומטי של נתוני הטופס</small>
+                                    <!-- <small>מילוי אוטומטי של נתוני הטופס</small> -->
                                 </div>
                             </div>
                             
