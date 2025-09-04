@@ -2,26 +2,40 @@
   <div class="card-header">
     <h3 class="card-title">
       <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M3,3H21V5H3V3M3,7H21V9H3V7M3,11H21V13H3V11M3,15H21V17H3V15M3,19H21V21H3V19Z"/>
+        <path d="M3,3H21V5H3V3M3,7H21V9H3V7M3,11H21V13H3V11M3,15H21V17H3V15M3,19H21V21H3V19Z" />
       </svg>
       רשימת עסקאות ({{transactions.length}})
+      <span *ngIf="isLoading" class="loading-indicator">
+        <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
+        </svg>
+        טוען...
+      </span>
     </h3>
     <div class="card-actions">
-      <button (click)="exportToExcel()" class="btn btn--secondary" [disabled]="transactions.length === 0">
+      <button (click)="refreshData()" class="btn btn--primary" [disabled]="isLoading" title="רענן נתונים מהשרת">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          <path
+            d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
+        </svg>
+        רענן
+      </button>
+      <button (click)="exportToExcel()" class="btn btn--secondary" [disabled]="transactions.length === 0 || isLoading">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
         </svg>
         ייצא Excel
       </button>
       <button (click)="clearAllData()" class="btn btn--danger" [disabled]="transactions.length === 0">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"/>
+          <path
+            d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" />
         </svg>
         נקה הכל
       </button>
     </div>
   </div>
-  
+
   <div class="card-body" [class.no-padding]="transactions.length > 0">
     <div class="table-container" *ngIf="transactions.length > 0">
       <table class="data-table">
@@ -29,59 +43,135 @@
           <tr>
             <th (click)="sortBy('date')" style="cursor:pointer">
               תאריך
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'date'" [class.asc]="sortColumn === 'date' && sortDirection === 'asc'" [class.desc]="sortColumn === 'date' && sortDirection === 'desc'">
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'date'"
+                [class.asc]="sortColumn === 'date' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'date' && sortDirection === 'desc'">
                 {{sortColumn === 'date' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
-              </span>
-            </th>
-            <th (click)="sortBy('description')" style="cursor:pointer">
-              תיאור/קטגוריה
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'description'" [class.asc]="sortColumn === 'description' && sortDirection === 'asc'" [class.desc]="sortColumn === 'description' && sortDirection === 'desc'">
-                {{sortColumn === 'description' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
-              </span>
-            </th>
-            <th (click)="sortBy('amount')" style="cursor:pointer">
-              סכום
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'amount'" [class.asc]="sortColumn === 'amount' && sortDirection === 'asc'" [class.desc]="sortColumn === 'amount' && sortDirection === 'desc'">
-                {{sortColumn === 'amount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
             </th>
             <th (click)="sortBy('type')" style="cursor:pointer">
               סוג
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'type'" [class.asc]="sortColumn === 'type' && sortDirection === 'asc'" [class.desc]="sortColumn === 'type' && sortDirection === 'desc'">
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'type'"
+                [class.asc]="sortColumn === 'type' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'type' && sortDirection === 'desc'">
                 {{sortColumn === 'type' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
             </th>
-            <th (click)="sortBy('client')" style="cursor:pointer">
+            <th (click)="sortBy('description')" style="cursor:pointer">
+              תיאור
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'description'"
+                [class.asc]="sortColumn === 'description' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'description' && sortDirection === 'desc'">
+                {{sortColumn === 'description' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('category')" style="cursor:pointer">
+              קטגוריה
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'category'"
+                [class.asc]="sortColumn === 'category' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'category' && sortDirection === 'desc'">
+                {{sortColumn === 'category' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('amount')" style="cursor:pointer">
+              סכום בסיסי
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'amount'"
+                [class.asc]="sortColumn === 'amount' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'amount' && sortDirection === 'desc'">
+                {{sortColumn === 'amount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('vatAmount')" style="cursor:pointer">
+              מע"מ
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'vatAmount'"
+                [class.asc]="sortColumn === 'vatAmount' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'vatAmount' && sortDirection === 'desc'">
+                {{sortColumn === 'vatAmount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('totalAmount')" style="cursor:pointer">
+              סה"כ
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'totalAmount'"
+                [class.asc]="sortColumn === 'totalAmount' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'totalAmount' && sortDirection === 'desc'">
+                {{sortColumn === 'totalAmount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('paymentMethod')" style="cursor:pointer">
+              אמצעי תשלום
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'paymentMethod'"
+                [class.asc]="sortColumn === 'paymentMethod' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'paymentMethod' && sortDirection === 'desc'">
+                {{sortColumn === 'paymentMethod' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('clientName')" style="cursor:pointer">
               לקוח/ספק
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'client'" [class.asc]="sortColumn === 'client' && sortDirection === 'asc'" [class.desc]="sortColumn === 'client' && sortDirection === 'desc'">
-                {{sortColumn === 'client' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'clientName'"
+                [class.asc]="sortColumn === 'clientName' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'clientName' && sortDirection === 'desc'">
+                {{sortColumn === 'clientName' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('details')" style="cursor:pointer">
+              פרטים נוספים
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'details'"
+                [class.asc]="sortColumn === 'details' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'details' && sortDirection === 'desc'">
+                {{sortColumn === 'details' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              </span>
+            </th>
+            <th (click)="sortBy('id')" style="cursor:pointer">
+              מזהה
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'id'"
+                [class.asc]="sortColumn === 'id' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'id' && sortDirection === 'desc'">
+                {{sortColumn === 'id' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
             </th>
             <th class="actions-col">פעולות</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let transaction of displayedTransactions; let i = index" 
-              [class.row--income]="transaction.type === 'income'"
-              [class.row--expense]="transaction.type === 'expense'">
+          <tr *ngFor="let transaction of displayedTransactions; let i = index"
+            [class.row--income]="transaction.type === 'income'" [class.row--expense]="transaction.type === 'expense'">
             <td class="cell--date">{{transaction.date | date:'dd/MM/yyyy'}}</td>
-            <td class="cell--description">{{transaction.description || transaction.category}}</td>
-            <td class="cell--amount" [class]="'amount--' + transaction.type">
-              {{transaction.amount | number:'1.2-2'}} ₪
-            </td>
             <td class="cell--type">
               <span class="badge" [class]="'badge--' + transaction.type">
                 {{transaction.type === 'income' ? 'הכנסה' : 'הוצאה'}}
               </span>
             </td>
-            <td class="cell--client">{{transaction.client || transaction.supplier}}</td>
+            <td class="cell--description" [title]="transaction.description">
+              {{(transaction.description || 'ללא תיאור') | slice:0:30}}{{(transaction.description || '').length > 30 ?
+              '...' : ''}}
+            </td>
+            <td class="cell--category">{{transaction.category || 'לא מוגדר'}}</td>
+            <td class="cell--amount" [class]="'amount--' + transaction.type">
+              {{transaction.amount | number:'1.2-2'}} ₪
+            </td>
+            <td class="cell--vat">
+              {{(transaction.vatAmount || 0) | number:'1.2-2'}} ₪
+            </td>
+            <td class="cell--total" [class]="'amount--' + transaction.type">
+              <strong>{{(transaction.totalAmount || transaction.amount) | number:'1.2-2'}} ₪</strong>
+            </td>
+            <td class="cell--payment">{{transaction.paymentMethod || 'לא מוגדר'}}</td>
+            <td class="cell--client">
+              {{ transaction.clientName || transaction.supplierName || 'לא מוגדר' }}
+            </td>
+            <td class="cell--details" [title]="transaction.details">
+              {{(transaction.details || 'ללא פרטים') | slice:0:25}}{{(transaction.details || '').length > 25 ? '...' :
+              ''}}
+            </td>
+            <td class="cell--id">
+              <code
+                class="transaction-id">{{transaction.id | slice:0:8}}{{transaction.id.length > 8 ? '...' : ''}}</code>
+            </td>
             <td class="cell--actions">
-              <button 
-                (click)="deleteTransaction(i)" 
-                class="btn btn--danger btn--sm"
-                title="מחק עסקה">
+              <button (click)="deleteTransaction(i)" class="btn btn--danger btn--sm" title="מחק עסקה">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"/>
+                  <path
+                    d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" />
                 </svg>
               </button>
             </td>
@@ -92,10 +182,10 @@
 
     <div *ngIf="transactions.length === 0" class="empty-state">
       <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z"/>
+        <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19Z" />
       </svg>
       <h4>אין עסקאות עדיין</h4>
-      <p>התחל בהוספת עסקה חדשה באמצעות הטופס למעלה או העלה קובץ Excel/JSON</p>
+      <p>התחל בהוספת עסקה חדשה באמצעות טפסי הכנסות או הוצאות Excel/JSON</p>
     </div>
   </div>
 </section>
@@ -104,20 +194,20 @@
 <div class="show-more-section" *ngIf="transactions.length > INITIAL_DISPLAY_COUNT">
   <div class="pagination-controls">
     <button (click)="loadMore()" class="show-more-btn" *ngIf="hasMoreToShow">
-       הצג עוד
+      הצג עוד
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M7,10L12,15L17,10H7Z"/>
+        <path d="M7,10L12,15L17,10H7Z" />
       </svg>
     </button>
-    
+
     <button (click)="showLess()" class="show-less-btn" *ngIf="canShowLess && !hasMoreToShow">
       הצג פחות
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M7,14L12,9L17,14H7Z"/>
+        <path d="M7,14L12,9L17,14H7Z" />
       </svg>
     </button>
   </div>
-  
+
   <div class="pagination-info" *ngIf="transactions.length > INITIAL_DISPLAY_COUNT">
     מציג {{displayedTransactions.length}} מתוך {{transactions.length}} עסקאות
   </div>

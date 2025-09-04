@@ -58,7 +58,6 @@ export const upload = multer({
 
 export const createExpense = async (req: Request, res: Response) => {
   try {
-    console.log("req.body", req.body);
 
     const expense = await expenseService.createExpense(req.body);
     res.status(201).json(expense);
@@ -81,8 +80,30 @@ export const getExpense = async (req: Request, res: Response) => {
 
 export const getExpenses = async (req: Request, res: Response) => {
   try {
-    const expenses = await expenseService.getAllExpenses();
-    res.json(expenses);
+    const { 
+      page = 1, 
+      limit = 100, 
+      startDate, 
+      endDate, 
+      minAmount, 
+      maxAmount, 
+      supplier,
+      category 
+    } = req.query;
+
+    const options = {
+      page: parseInt(page as string),
+      limit: parseInt(limit as string),
+      startDate: startDate as string,
+      endDate: endDate as string,
+      minAmount: minAmount ? parseFloat(minAmount as string) : undefined,
+      maxAmount: maxAmount ? parseFloat(maxAmount as string) : undefined,
+      supplier: supplier as string,
+      category: category as string
+    };
+
+    const result = await expenseService.getAllExpenses(options);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error getting expenses', error });
   }

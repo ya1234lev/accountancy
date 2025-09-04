@@ -1,7 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TransactionService } from '../../services/transaction.service';
-import { ExpenseService } from '../../services/expense.services';
+import { CombinedTransactionService } from '../../services/combined-transaction.service';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -21,11 +20,7 @@ export class FileUploadComponent {
   isDragOverPdf = false;
   isProcessing = false;
 
-  constructor(
-    private transactionService: TransactionService,
-    private expenseService: ExpenseService
-  ) { }
-
+  constructor(private transactionService: CombinedTransactionService) { }
   triggerFileInput(type: 'income' | 'expense' | 'pdf'): void {
     if (type === 'income') {
       this.incomeFileInput.nativeElement.click();
@@ -183,7 +178,7 @@ export class FileUploadComponent {
     // Validate file size (5MB limit)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      this.transactionService.showNotification('הקובץ גדול מדי. גודל מקסימלי: 5MB', 'error');
+      this.transactionService.showNotification('error', 'הקובץ גדול מדי. גודל מקסימלי: 5MB');
       return;
     }
 
@@ -198,7 +193,7 @@ export class FileUploadComponent {
       file.name.endsWith('.xls')
 
     if (!isValidType) {
-      this.transactionService.showNotification('סוג קובץ לא נתמך. יש להעלות קבצי Excel (.xlsx, .xls)', 'error');
+      this.transactionService.showNotification('error', 'סוג קובץ לא נתמך. יש להעלות קבצי Excel (.xlsx, .xls)');
       return;
     }
 
@@ -210,7 +205,7 @@ export class FileUploadComponent {
       }
     } catch (error) {
       console.error('Error processing file:', error);
-      this.transactionService.showNotification('שגיאה בעיבוד הקובץ. אנא בדוק את הפורמט ונסה שוב', 'error');
+      this.transactionService.showNotification('error', 'שגיאה בעיבוד הקובץ. אנא בדוק את הפורמט ונסה שוב');
     } finally {
       this.isProcessing = false;
       // Reset file input
@@ -286,10 +281,10 @@ export class FileUploadComponent {
       }
 
       if (successCount > 0) {
-        this.transactionService.showNotification(`הוספו ${successCount} עסקאות מקובץ Excel`, 'success');
+        this.transactionService.showNotification('success', `הוספו ${successCount} עסקאות מקובץ Excel`);
       }
       if (errorCount > 0) {
-        this.transactionService.showNotification(`${errorCount} שורות נכשלו - בדוק פורמט הנתונים`, 'error');
+        this.transactionService.showNotification('error', `${errorCount} שורות נכשלו - בדוק פורמט הנתונים`);
       }
     } catch (error) {
       throw new Error('שגיאה בעיבוד קובץ Excel');
@@ -354,19 +349,12 @@ export class FileUploadComponent {
   private validateExpenseTransactionData(item: any): boolean {
     // בדיקת שדות חובה להוצאה
     if (!item) return false;
-    console.log("1");
     if (typeof item.date !== 'string' || !item.date.trim()) return false;
-    console.log("2");
     if (typeof item.supplier !== 'string' || !item.supplier.trim()) return false;
-    console.log("3");
     if (typeof item.category !== 'string') return false;
-    console.log("4");
     if (typeof item.amount !== 'number' || isNaN(item.amount)) return false;
-    console.log("5");
     if (typeof item.VAT !== 'number' || isNaN(item.VAT)) return false;
-    console.log("6");
     if (typeof item.PaymentMethod !== 'string' || !item.PaymentMethod.trim()) return false;
-    console.log("7");
     // description לא חובה להוצאה, אם תרצה להוסיף: typeof item.description === 'string' && item.description.trim() !== ''
     return true;
   }

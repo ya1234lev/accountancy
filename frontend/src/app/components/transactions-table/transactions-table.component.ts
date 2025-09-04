@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { TransactionService, ExpenseTransaction,IncomeTransaction } from '../../services/transaction.service';
+import { CombinedTransactionService, CombinedTransaction } from '../../services/combined-transaction.service';
 
 @Component({
   selector: 'app-transactions-table',
@@ -11,8 +11,9 @@ import { TransactionService, ExpenseTransaction,IncomeTransaction } from '../../
   styleUrls: ['./transactions-table.component.css']
 })
 export class TransactionsTableComponent implements OnInit, OnDestroy {
-  transactions: any[] = [];
-  displayedTransactions: any[] = [];
+  transactions: CombinedTransaction[] = [];
+  displayedTransactions: CombinedTransaction[] = [];
+  isLoading: boolean = false;
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   currentDisplayCount: number = 10;
@@ -21,12 +22,20 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
   readonly Math = Math; // For template access
   private destroy$ = new Subject<void>();
 
-  constructor(private transactionService: TransactionService) {}
+  constructor(private transactionService: CombinedTransactionService) {}
 
   ngOnInit() {
+    // האזנה לטעינת נתונים
+    this.transactionService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => {
+        this.isLoading = loading;
+      });
+
+    // האזנה לעסקאות
     this.transactionService.transactions$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(transactions => {
+      .subscribe((transactions: CombinedTransaction[]) => {
         this.transactions = this.getSorted(transactions);
         this.updateDisplayedTransactions();
       });
@@ -70,8 +79,8 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
     return this.currentDisplayCount > this.INITIAL_DISPLAY_COUNT;
   }
 
-  getSorted(transactions: any[]): any[] {
-    let sorted: any[];
+  getSorted(transactions: CombinedTransaction[]): CombinedTransaction[] {
+    let sorted: CombinedTransaction[];
     if (!this.sortColumn) {
       sorted = [...transactions];
     } else {
@@ -121,5 +130,9 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
 
   exportToExcel() {
     this.transactionService.exportToExcel();
+  }
+
+  refreshData() {
+    this.transactionService.refreshTransactions();
   }
 }

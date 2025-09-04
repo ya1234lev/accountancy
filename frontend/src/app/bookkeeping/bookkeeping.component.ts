@@ -1,12 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { TransactionService, Transaction } from '../services/transaction.service';
+import { CombinedTransactionService, CombinedTransaction } from '../services/combined-transaction.service';
 import { NotificationsComponent } from '../components/notifications/notifications.component';
 import { HeaderComponent } from '../components/header/header.component';
 import { StatisticsComponent } from '../components/statistics/statistics.component';
-import { TransactionFormComponent } from '../components/transaction-form/transaction-form.component';
-import { FileUploadComponent } from '../components/file-upload/file-upload.component';
 import { TransactionsTableComponent } from '../components/transactions-table/transactions-table.component';
 
 @Component({
@@ -17,8 +15,6 @@ import { TransactionsTableComponent } from '../components/transactions-table/tra
     NotificationsComponent,
     HeaderComponent,
     StatisticsComponent,
-    TransactionFormComponent,
-    FileUploadComponent,
     TransactionsTableComponent
   ],
   template: `
@@ -42,16 +38,7 @@ import { TransactionsTableComponent } from '../components/transactions-table/tra
             [totalIncome]="totalIncome"
             [totalExpenses]="totalExpenses"
             [netProfit]="netProfit">
-          </app-statistics>
-
-          <!-- Content Grid -->
-          <div class="content-grid">
-            <!-- File Upload -->
-            <app-file-upload></app-file-upload>
-            
-            <!-- Add Transaction Form -->
-            <app-transaction-form (transactionAdded)="onTransactionAdded($event)"></app-transaction-form>
-          </div>
+          </app-statistics>         
 
           <!-- Transactions Table -->
           <app-transactions-table></app-transactions-table>
@@ -104,14 +91,14 @@ import { TransactionsTableComponent } from '../components/transactions-table/tra
   `]
 })
 export class BookkeepingComponent implements OnInit, OnDestroy {
-  transactions: Transaction[] = [];
+  transactions: CombinedTransaction[] = [];
   totalIncome = 0;
   totalExpenses = 0;
   netProfit = 0;
   
   private destroy$ = new Subject<void>();
 
-  constructor(private transactionService: TransactionService) {}
+  constructor(private transactionService: CombinedTransactionService) {}
 
   ngOnInit() {
     // Subscribe to transactions
@@ -128,7 +115,7 @@ export class BookkeepingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onTransactionAdded(transaction: Omit<Transaction, 'id'>) {
+  onTransactionAdded(transaction: Omit<CombinedTransaction, 'id'>) {
     if (transaction.type === 'income') {
       this.transactionService.addIncomeTransaction(transaction as any);
     } else if (transaction.type === 'expense') {

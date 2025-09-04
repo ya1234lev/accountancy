@@ -36,8 +36,6 @@ export class ExpenseService {
     }
 
     addExpense(expense: Partial<Expense>): Observable<Expense> {
-        console.log("expense 1",expense);
-        
         return this.http.post<Expense>(this.apiUrl, expense);
     }
 

@@ -28,7 +28,6 @@ export class SupplierService {
   }
 
   addSupplier(supplier: Partial<Supplier>): Observable<Supplier> {
-    console.log("supplier",supplier);
     
     return this.http.post<Supplier>(this.apiUrl, supplier);
   }
