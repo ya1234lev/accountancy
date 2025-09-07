@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
 export interface Client {
   id: string;
@@ -50,7 +51,9 @@ export class IncomeService {
 
   // Income Methods
   getIncomes(): Observable<Income[]> {
-    return this.http.get<Income[]>(this.apiUrl);
+    return this.http.get<{data: Income[]}>(this.apiUrl).pipe(
+      map(response => response.data)
+    );
   }
 
   addIncome(income: any): Observable<any> {

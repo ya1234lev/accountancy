@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface Expense {
     id: string;
@@ -28,7 +29,9 @@ export class ExpenseService {
     constructor(private http: HttpClient) { }
 
     getExpenses(): Observable<Expense[]> {
-        return this.http.get<Expense[]>(this.apiUrl);
+        return this.http.get<{data: Expense[]}>(this.apiUrl).pipe(
+            map(response => response.data)
+        );
     }
 
     getExpense(id: string): Observable<Expense> {
