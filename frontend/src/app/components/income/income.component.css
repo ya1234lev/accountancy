@@ -5,9 +5,14 @@
 }
 
 .app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   background: var(--white);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+  z-index: 1000;
 }
 
 .container {
@@ -25,9 +30,9 @@
 
 .back-button-fixed {
   position: fixed;
-  top: 2rem;
+  top: 130px; /* מתחת לכותרת הקבועה */
   left: 2rem;
-  z-index: 9999; /* z-index גבוה מאוד */
+  z-index: 999; /* נמוך יותר מהכותרת */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,6 +115,7 @@
 
 .main-content {
   padding: 2rem 0;
+  margin-top: 120px; /* מקום לכותרת הקבועה */
 }
 
 .tab-content {
@@ -426,8 +432,8 @@
 /* מערכת הודעות */
 .notifications-container {
   position: fixed;
-  top: 1rem;
-  left: 1rem;
+  top: 130px; /* מתחת לכותרת הקבועה */
+  right: 1rem; /* עברנו לצד ימין כדי לא להתנגש עם כפתור החזרה */
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -618,6 +624,20 @@
   .nav-menu {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .main-content {
+    margin-top: 160px; /* יותר מקום בטלפונים */
+  }
+
+  .back-button-fixed {
+    top: 170px; /* התאמה לטלפונים */
+  }
+
+  .notifications-container {
+    top: 170px; /* התאמה לטלפונים */
+    right: 0.5rem;
+    max-width: calc(100vw - 1rem);
   }
 
   .form-grid {

@@ -224,27 +224,42 @@ export class IncomeComponent implements OnInit {
     }
  // חישוב סך הכל
     calculateTotal() {
-        if (this.newReceipt.amount && this.newReceipt.vatRate) {
-            this.newReceipt.vatAmount = (this.newReceipt.amount * this.newReceipt.vatRate) / 100;
-            this.newReceipt.totalAmount = this.newReceipt.amount + this.newReceipt.vatAmount;
+        if (this.newReceipt.totalAmount && this.newReceipt.vatRate) {
+            // אם יש מע"מ - חישוב הסכום הבסיסי מתוך הסכום הכולל
+            this.newReceipt.amount = this.newReceipt.totalAmount / (1 + this.newReceipt.vatRate / 100);
+            this.newReceipt.vatAmount = this.newReceipt.totalAmount - this.newReceipt.amount;
         } else {
+            // אם אין מע"מ - הסכום הבסיסי שווה לסכום הכולל
+            this.newReceipt.amount = this.newReceipt.totalAmount || 0;
             this.newReceipt.vatAmount = 0;
-            this.newReceipt.totalAmount = this.newReceipt.amount || 0;
         }
 
         // עדכון פרטי התשלום בהתאם לסכום הכולל
         this.updatePaymentDetails();
     }
 
+    // פונקציה לחישוב הסכום המוצג בשדה "סך הכל"
+    getCalculatedAmount(): number {
+        if (!this.newReceipt.totalAmount) return 0;
+        
+        if ((this.newReceipt.vatRate || 0) > 0) {
+            // אם יש מע"מ - מציג את הסכום הכולל
+            return this.newReceipt.totalAmount;
+        } else {
+            // אם אין מע"מ - מחשב את הסכום ללא מע"מ
+            return this.newReceipt.totalAmount / (1 + (this.settings.defaultVatRate || 0) / 100);
+        }
+    }
+
     // עדכון פרטי התשלום
     updatePaymentDetails() {
-        const totalAmount = this.newReceipt.totalAmount || 0;
+        const calculatedAmount = this.getCalculatedAmount();
 
-        // עדכון סכום בכל פרטי התשלום
-        this.cashDetails.amount = totalAmount;
-        this.creditDetails.amount = totalAmount;
-        this.checkDetails.amount = totalAmount;
-        this.transferDetails.amount = totalAmount;
+        // עדכון סכום בכל פרטי התשלום לפי הסכום החישובי
+        this.cashDetails.amount = calculatedAmount;
+        this.creditDetails.amount = calculatedAmount;
+        this.checkDetails.amount = calculatedAmount;
+        this.transferDetails.amount = calculatedAmount;
     }
 
     // בחירת לקוח
@@ -492,6 +507,19 @@ export class IncomeComponent implements OnInit {
 
 
     // המרת Receipt לאובייקט Income בפורמט השרת
+    // פונקציה לחישוב סכום מחושב עבור קבלה כלשהי
+    private getCalculatedAmountForReceipt(receipt: Receipt): number {
+        if (!receipt.totalAmount) return 0;
+        
+        if ((receipt.vatRate || 0) > 0) {
+            // אם יש מע"מ - מציג את הסכום הכולל
+            return receipt.totalAmount;
+        } else {
+            // אם אין מע"מ - מחשב את הסכום ללא מע"מ
+            return receipt.totalAmount / (1 + (this.settings.defaultVatRate || 0) / 100);
+        }
+    }
+
     private mapReceiptToIncome(receipt: Receipt): any {
         // המרת clientId למספר מזהה (אם אפשרי)
         let customerId: Number | null = null;
@@ -504,7 +532,7 @@ export class IncomeComponent implements OnInit {
         }
 
         // בניית אובייקט payment לפי סוג התשלום
-        let payment: any = { method: receipt.paymentMethod, amount: receipt.totalAmount };
+        let payment: any = { method: receipt.paymentMethod, amount: receipt.amount };
         if (receipt.paymentMethod === 'cash' && receipt.cashDetails) {
             payment.amount = receipt.cashDetails.amount;
         } else if (receipt.paymentMethod === 'credit' && receipt.creditDetails) {
@@ -534,7 +562,7 @@ export class IncomeComponent implements OnInit {
             receiptNumber: receipt.receiptNumber,
             date: receipt.date,
             customer: customerId,
-            amount: receipt.amount,
+            amount: this.getCalculatedAmountForReceipt(receipt),
             vat: receipt.vatAmount,
             payment,
             details: receipt.details,

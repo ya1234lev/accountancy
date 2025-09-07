@@ -145,7 +145,7 @@ export class CombinedTransactionService {
                         paymentMethod: this.getPaymentMethodLabel(expense.paymentMethod),
                         supplierName: supplierName,
                         details: expense.details,
-                        vatAmount: expense.vatAmount,
+                        vatAmount: expense.vat,
                         totalAmount: expense.totalAmount,
                         originalData: expense
                     };
@@ -277,7 +277,7 @@ export class CombinedTransactionService {
 
         // יצירת CSV מפורט עם כל הנתונים
         const headers = [
-            'תאריך', 'סוג', 'תיאור', 'קטגוריה', 'סכום בסיסי', 'מע"מ',
+            'תאריך', 'סוג', 'תיאור', 'קטגוריה', 'מע"מ',
             'סה"כ', 'אמצעי תשלום', 'לקוח/ספק', 'פרטים נוספים', 'מזהה'
         ];
         const csvContent = [
@@ -287,9 +287,8 @@ export class CombinedTransactionService {
                 t.type === 'income' ? 'הכנסה' : 'הוצאה',
                 `"${t.description || ''}"`,
                 `"${t.category || ''}"`,
-                t.amount,
                 t.vatAmount || 0,
-                t.totalAmount || t.amount,
+                t.amount,
                 `"${t.paymentMethod || ''}"`,
                 `"${t.clientName || t.supplierName || ''}"`,
                 `"${t.details || ''}"`,
