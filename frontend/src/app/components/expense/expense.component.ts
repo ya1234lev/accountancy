@@ -460,6 +460,44 @@ export class ExpenseComponent implements OnInit {
         this.parsedExpenseData = null;
     }
 
+    // הוצאות מסוננות
+    get filteredExpenses(): any[] {
+        if (!this.searchTerm) {
+            return this.expenses;
+        }
+
+        const term = this.searchTerm.toLowerCase();
+        return this.expenses.filter(expense => {
+            // חיפוש לפי מספר הוצאה/אסמכתא
+            const referenceNumberMatch = expense.referenceNumber?.toLowerCase().includes(term);
+
+            // חיפוש לפי שם ספק
+            const supplierNameMatch = expense.supplierName?.toLowerCase().includes(term);
+
+            // חיפוש לפי תאריך (בפורמטים שונים)
+            const expenseDate = new Date(expense.date);
+            const formattedDate1 = expenseDate.toLocaleDateString('he-IL'); // פורמט ישראלי
+            const formattedDate2 = expenseDate.toLocaleDateString('en-GB'); // פורמט dd/mm/yyyy
+            const formattedDate3 = expense.date; // פורמט ISO (yyyy-mm-dd)
+            const dateMatch = formattedDate1.includes(term) ||
+                formattedDate2.includes(term) ||
+                formattedDate3.includes(term);
+
+            // חיפוש לפי קטגוריה
+            const categoryMatch = expense.category?.toLowerCase().includes(term);
+
+            // חיפוש לפי פרטים
+            const detailsMatch = expense.details?.toLowerCase().includes(term);
+
+            // חיפוש לפי סכום
+            const amountMatch = expense.amount?.toString().includes(term) ||
+                expense.totalAmount?.toString().includes(term);
+
+            return referenceNumberMatch || supplierNameMatch || dateMatch || 
+                   categoryMatch || detailsMatch || amountMatch;
+        });
+    }
+
     // ניווט לעמוד הראשי
     navigateToHome() {
         this.router.navigate(['/']);

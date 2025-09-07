@@ -239,9 +239,9 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">רשימת הוצאות</h2>
-                    </div>
-                    <div class="header-actions">
-                        <input type="text" placeholder="חיפוש" [(ngModel)]="searchTerm" class="search-input">
+                        <div class="header-actions">
+                            <input type="text" placeholder="חיפוש" [(ngModel)]="searchTerm" class="search-input">
+                        </div>
                     </div>
 
                     <div class="card-body">
@@ -258,7 +258,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let expense of expenses">
+                                    <tr *ngFor="let expense of filteredExpenses">
                                         <td>{{expense.referenceNumber}}</td>
                                         <td>{{expense.date | date:'dd/MM/yyyy'}}</td>
                                         <td>{{expense.supplierName}}</td>
@@ -274,7 +274,9 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <div *ngIf="expenses.length === 0" class="no-data">אין הוצאות להצגה</div>
+                            <div *ngIf="filteredExpenses.length === 0" class="no-data">
+                                {{ searchTerm ? 'לא נמצאו תוצאות חיפוש' : 'אין הוצאות להצגה' }}
+                            </div>
                         </div>
                     </div>
                 </div>
