@@ -73,14 +73,6 @@
                 {{sortColumn === 'category' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
             </th>
-            <th (click)="sortBy('amount')" style="cursor:pointer">
-              סכום בסיסי
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'amount'"
-                [class.asc]="sortColumn === 'amount' && sortDirection === 'asc'"
-                [class.desc]="sortColumn === 'amount' && sortDirection === 'desc'">
-                {{sortColumn === 'amount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
-              </span>
-            </th>
             <th (click)="sortBy('vatAmount')" style="cursor:pointer">
               מע"מ
               <span class="sort-arrow" [class.active-arrow]="sortColumn === 'vatAmount'"
@@ -89,12 +81,12 @@
                 {{sortColumn === 'vatAmount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
             </th>
-            <th (click)="sortBy('totalAmount')" style="cursor:pointer">
+            <th (click)="sortBy('amount')" style="cursor:pointer">
               סה"כ
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'totalAmount'"
-                [class.asc]="sortColumn === 'totalAmount' && sortDirection === 'asc'"
-                [class.desc]="sortColumn === 'totalAmount' && sortDirection === 'desc'">
-                {{sortColumn === 'totalAmount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
+              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'amount'"
+                [class.asc]="sortColumn === 'amount' && sortDirection === 'asc'"
+                [class.desc]="sortColumn === 'amount' && sortDirection === 'desc'">
+                {{sortColumn === 'amount' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
             </th>
             <th (click)="sortBy('paymentMethod')" style="cursor:pointer">
@@ -146,14 +138,11 @@
               '...' : ''}}
             </td>
             <td class="cell--category">{{transaction.category || 'לא מוגדר'}}</td>
-            <td class="cell--amount" [class]="'amount--' + transaction.type">
-              {{transaction.amount | number:'1.2-2'}} ₪
-            </td>
             <td class="cell--vat">
               {{(transaction.vatAmount || 0) | number:'1.2-2'}} ₪
             </td>
             <td class="cell--total" [class]="'amount--' + transaction.type">
-              <strong>{{(transaction.totalAmount || transaction.amount) | number:'1.2-2'}} ₪</strong>
+              <strong>{{transaction.amount | number:'1.2-2'}} ₪</strong>
             </td>
             <td class="cell--payment">{{transaction.paymentMethod || 'לא מוגדר'}}</td>
             <td class="cell--client">
