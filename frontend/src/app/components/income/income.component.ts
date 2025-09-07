@@ -262,6 +262,18 @@ export class IncomeComponent implements OnInit {
         this.transferDetails.amount = calculatedAmount;
     }
 
+    // בדיקת תקינות תאריך פירעון
+    isValidDueDate(): boolean {
+        if (this.newReceipt.paymentMethod !== 'check' || !this.checkDetails.dueDate || !this.newReceipt.date) {
+            return true; // אם לא צ'ק או אין תאריך פירעון או תאריך קבלה, הבדיקה עוברת
+        }
+        
+        const receiptDate = new Date(this.newReceipt.date);
+        const dueDate = new Date(this.checkDetails.dueDate);
+        
+        return dueDate > receiptDate;
+    }
+
     // בחירת לקוח
     onClientChange() {
         if (this.newReceipt.clientId === 'new') {
@@ -286,6 +298,12 @@ export class IncomeComponent implements OnInit {
 
     // שמירת קבלה
     saveReceipt() {
+        // בדיקת תקינות תאריך פירעון
+        if (!this.isValidDueDate()) {
+            this.showNotification('תאריך הפירעון חייב להיות לאחר תאריך הקבלה', 'error');
+            return;
+        }
+
         const receipt: Receipt = {
             id: this.generateId(),
             receiptNumber: this.newReceipt.receiptNumber!,

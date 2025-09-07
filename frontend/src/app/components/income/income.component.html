@@ -208,7 +208,11 @@
                     </div>
                     <div class="payment-field">
                       <label>תאריך פירעון</label>
-                      <input type="date" [(ngModel)]="checkDetails.dueDate" name="dueDate">
+                      <input type="date" [(ngModel)]="checkDetails.dueDate" name="dueDate"
+                        [class.error]="!isValidDueDate() && checkDetails.dueDate && newReceipt.date">
+                      <div *ngIf="!isValidDueDate() && checkDetails.dueDate && newReceipt.date" class="error-message">
+                        תאריך הפירעון חייב להיות לאחר תאריך הקבלה
+                      </div>
                     </div>
                   </div>
                 </div>
