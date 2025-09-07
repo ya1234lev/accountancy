@@ -105,22 +105,6 @@
                 {{sortColumn === 'clientName' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
               </span>
             </th>
-            <th (click)="sortBy('details')" style="cursor:pointer">
-              פרטים נוספים
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'details'"
-                [class.asc]="sortColumn === 'details' && sortDirection === 'asc'"
-                [class.desc]="sortColumn === 'details' && sortDirection === 'desc'">
-                {{sortColumn === 'details' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
-              </span>
-            </th>
-            <th (click)="sortBy('id')" style="cursor:pointer">
-              מזהה
-              <span class="sort-arrow" [class.active-arrow]="sortColumn === 'id'"
-                [class.asc]="sortColumn === 'id' && sortDirection === 'asc'"
-                [class.desc]="sortColumn === 'id' && sortDirection === 'desc'">
-                {{sortColumn === 'id' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}}
-              </span>
-            </th>
             <th class="actions-col">פעולות</th>
           </tr>
         </thead>
@@ -147,14 +131,6 @@
             <td class="cell--payment">{{transaction.paymentMethod || 'לא מוגדר'}}</td>
             <td class="cell--client">
               {{ transaction.clientName || transaction.supplierName || 'לא מוגדר' }}
-            </td>
-            <td class="cell--details" [title]="transaction.details">
-              {{(transaction.details || 'ללא פרטים') | slice:0:25}}{{(transaction.details || '').length > 25 ? '...' :
-              ''}}
-            </td>
-            <td class="cell--id">
-              <code
-                class="transaction-id">{{transaction.id | slice:0:8}}{{transaction.id.length > 8 ? '...' : ''}}</code>
             </td>
             <td class="cell--actions">
               <button (click)="deleteTransaction(i)" class="btn btn--danger btn--sm" title="מחק עסקה">

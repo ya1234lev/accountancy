@@ -278,7 +278,7 @@ export class CombinedTransactionService {
         // יצירת CSV מפורט עם כל הנתונים
         const headers = [
             'תאריך', 'סוג', 'תיאור', 'קטגוריה', 'מע"מ',
-            'סה"כ', 'אמצעי תשלום', 'לקוח/ספק', 'פרטים נוספים', 'מזהה'
+            'סה"כ', 'אמצעי תשלום', 'לקוח/ספק'
         ];
         const csvContent = [
             headers.join(','),
@@ -290,9 +290,7 @@ export class CombinedTransactionService {
                 t.vatAmount || 0,
                 t.amount,
                 `"${t.paymentMethod || ''}"`,
-                `"${t.clientName || t.supplierName || ''}"`,
-                `"${t.details || ''}"`,
-                `"${t.id}"`
+                `"${t.clientName || t.supplierName || ''}"`
             ].join(','))
         ].join('\n');
 
