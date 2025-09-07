@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CombinedTransactionService } from '../../services/combined-transaction.service';
+import { ExpenseService } from '../../services/expense.services';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -20,7 +21,10 @@ export class FileUploadComponent {
   isDragOverPdf = false;
   isProcessing = false;
 
-  constructor(private transactionService: CombinedTransactionService) { }
+  constructor(
+    private transactionService: CombinedTransactionService,
+    private expenseService: ExpenseService
+  ) { }
   triggerFileInput(type: 'income' | 'expense' | 'pdf'): void {
     if (type === 'income') {
       this.incomeFileInput.nativeElement.click();
@@ -90,7 +94,7 @@ export class FileUploadComponent {
   private async handlePdfFiles(files: FileList): Promise<void> {
     // בדיקת מספר הקבצים
     if (files.length > 10) {
-      this.transactionService.showNotification('ניתן להעלות מקסימום 10 קבצי PDF בו זמנית', 'error');
+      this.transactionService.showNotification('error', 'ניתן להעלות מקסימום 10 קבצי PDF בו זמנית');
       return;
     }
 
@@ -103,13 +107,13 @@ export class FileUploadComponent {
       
       // בדיקת סוג הקובץ
       if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-        this.transactionService.showNotification(`הקובץ ${file.name} אינו קובץ PDF תקין`, 'error');
+        this.transactionService.showNotification('error', `הקובץ ${file.name} אינו קובץ PDF תקין`);
         return;
       }
       
       // בדיקת גודל הקובץ
       if (file.size > maxSize) {
-        this.transactionService.showNotification(`הקובץ ${file.name} גדול מדי. גודל מקסימלי: 50MB`, 'error');
+        this.transactionService.showNotification('error', `הקובץ ${file.name} גדול מדי. גודל מקסימלי: 50MB`);
         return;
       }
       
@@ -117,7 +121,7 @@ export class FileUploadComponent {
     }
 
     if (validFiles.length === 0) {
-      this.transactionService.showNotification('לא נמצאו קבצי PDF תקינים', 'error');
+      this.transactionService.showNotification('error', 'לא נמצאו קבצי PDF תקינים');
       return;
     }
 
@@ -129,7 +133,7 @@ export class FileUploadComponent {
         formData.append('pdfFiles', file);
       });
 
-      this.transactionService.showNotification(`מעבד ${validFiles.length} קבצי PDF...`, 'info');
+      this.transactionService.showNotification('info', `מעבד ${validFiles.length} קבצי PDF...`);
 
       const response = await this.expenseService.uploadMultiplePdfs(formData);
       
@@ -138,8 +142,8 @@ export class FileUploadComponent {
         
         if (successfullyProcessed > 0) {
           this.transactionService.showNotification(
-            `הצלחה! נוצרו ${successfullyProcessed} הוצאות חדשות מתוך ${validFiles.length} קבצים`,
-            'success'
+            'success',
+            `הצלחה! נוצרו ${successfullyProcessed} הוצאות חדשות מתוך ${validFiles.length} קבצים`
           );
           
           // ניווט לעמוד רשימת ההוצאות כדי לראות את התוצאות החדשות
@@ -150,8 +154,8 @@ export class FileUploadComponent {
         
         if (errorsCount > 0) {
           this.transactionService.showNotification(
-            `${errorsCount} קבצים לא עובדו בהצלחה`,
-            'error'
+            'error',
+            `${errorsCount} קבצים לא עובדו בהצלחה`
           );
         }
 
@@ -159,12 +163,12 @@ export class FileUploadComponent {
         console.log('תוצאות עיבוד קבצי PDF:', response.data);
         
       } else {
-        this.transactionService.showNotification('שגיאה בעיבוד קבצי PDF', 'error');
+        this.transactionService.showNotification('error', 'שגיאה בעיבוד קבצי PDF');
       }
       
     } catch (error) {
       console.error('Error uploading PDF files:', error);
-      this.transactionService.showNotification('שגיאה בהעלאת קבצי PDF', 'error');
+      this.transactionService.showNotification('error', 'שגיאה בהעלאת קבצי PDF');
     } finally {
       this.isProcessing = false;
       // איפוס השדה
