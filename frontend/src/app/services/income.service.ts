@@ -68,6 +68,11 @@ export class IncomeService {
     return this.http.delete(`${this.apiUrl}/${incomeId}`);
   }
 
+  // מחיקת כל ההכנסות 
+  deleteAllIncomes(): Observable<any> {
+    return this.http.delete(this.apiUrl);
+  }
+
   generateReceiptNumber(): Observable<{ receiptNumber: string }> {
     return this.http.get<{ receiptNumber: string }>(`${this.apiUrl}/generate-receipt-number`);
   }

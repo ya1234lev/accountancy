@@ -87,7 +87,17 @@ export const updateIncome = async (id: string, incomeData: Partial<IIncome>): Pr
 };
 
 export const deleteIncome = async (id: string): Promise<IIncome | null> => {
-  return await Income.findByIdAndDelete(id);
+  console.log('incomeService.deleteIncome - מנסה למחוק עם ID:', id);
+  console.log('סוג ה-ID:', typeof id);
+  
+  try {
+    const result = await Income.findByIdAndDelete(id);
+    console.log('תוצאת המחיקה:', result);
+    return result;
+  } catch (error) {
+    console.error('שגיאה במחיקה מבסיס הנתונים:', error);
+    throw error;
+  }
 };
 
 // מחיקת כל ההכנסות
