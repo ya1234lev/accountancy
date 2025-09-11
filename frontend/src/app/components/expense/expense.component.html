@@ -75,48 +75,45 @@
                         <h3 class="card-title-small">העלאת אסמכתא PDF</h3>
                     </div>
                     <div class="card-body">
-                        <div class="pdf-upload-area-compact" 
-                             [class.drag-over]="isDragOverPdf"
-                             [class.processing]="isProcessingPdf"
-                             (dragover)="onPdfDragOver($event)"
-                             (dragleave)="onPdfDragLeave($event)"
-                             (drop)="onPdfDrop($event)"
-                             (click)="triggerPdfFileInput()"
-                             >
-                            
-                            <input #pdfFileInput 
-                                   type="file" 
-                                   accept=".pdf"
-                                   multiple
-                                   style="display: none"
-                                   (change)="onPdfFileSelected($event)">
-                            
+                        <div class="pdf-upload-area-compact" [class.drag-over]="isDragOverPdf"
+                            [class.processing]="isProcessingPdf" (dragover)="onPdfDragOver($event)"
+                            (dragleave)="onPdfDragLeave($event)" (drop)="onPdfDrop($event)"
+                            (click)="triggerPdfFileInput()">
+
+                            <input #pdfFileInput type="file" accept=".pdf" multiple style="display: none"
+                                (change)="onPdfFileSelected($event)">
+
                             <div class="upload-content-compact" *ngIf="!isProcessingPdf">
-                                <svg class="upload-icon-small" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                                <svg class="upload-icon-small" width="32" height="32" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                                 </svg>
                                 <div class="upload-text">
                                     <span class="upload-title">גרור PDF או לחץ לבחירה</span>
                                     <!-- <small>מילוי אוטומטי של נתוני הטופס</small> -->
                                 </div>
                             </div>
-                            
+
                             <div class="processing-content-compact" *ngIf="isProcessingPdf">
                                 <div class="spinner-small"></div>
                                 <span>מעבד...</span>
                             </div>
                         </div>
-                        
+
                         <!-- רשימת קבצים שהועלו - מקוצרת -->
                         <div class="uploaded-files-compact" *ngIf="uploadedFiles.length > 0">
                             <div class="file-list-compact">
                                 <div class="file-item-compact" *ngFor="let file of uploadedFiles; let i = index">
-                                    <svg class="file-icon-small" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                                    <svg class="file-icon-small" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="currentColor">
+                                        <path
+                                            d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                                     </svg>
                                     <span class="file-name-small">{{ file.name }}</span>
                                     <div class="file-status-small success">✓</div>
-                                    <button class="remove-file-btn-small" (click)="removePdfFile(i)" title="הסר">×</button>
+                                    <button class="remove-file-btn-small" (click)="removePdfFile(i)"
+                                        title="הסר">×</button>
                                 </div>
                             </div>
                             <button class="clear-files-btn-small" (click)="clearAllPdfFiles()">נקה</button>
@@ -188,7 +185,7 @@
                                 <div class="form-group full-width">
                                     <label>אופן תשלום</label>
                                     <div class="payment-methods">
-                                       
+
                                         <label class="radio-option">
                                             <input type="radio" [(ngModel)]="newExpense.paymentMethod"
                                                 name="paymentMethod" value="cash">
@@ -222,12 +219,13 @@
 
                             <!-- כפתורים -->
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary" [disabled]="!expenseForm.form.valid">
-                                    שמור הוצאה
-                                </button>
                                 <button type="button" class="btn btn-outline" (click)="resetForm()">
                                     נקה טופס
                                 </button>
+                                <button type="submit" class="btn btn-primary" [disabled]="!expenseForm.form.valid">
+                                    שמור הוצאה
+                                </button>
+
                             </div>
                         </form>
                     </div>
