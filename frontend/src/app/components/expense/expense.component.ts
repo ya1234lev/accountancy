@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExpenseService, Expense } from '../../services/expense.services';
 import { SupplierService, Supplier } from '../../services/suppliers';
+import { CombinedTransactionService } from '../../services/combined-transaction.service';
 import { Router } from '@angular/router';
 
 interface Notification {
@@ -64,7 +65,12 @@ export class ExpenseComponent implements OnInit {
 
     searchTerm = '';
 
-    constructor(private expenseService: ExpenseService, private supplierService: SupplierService, private router: Router) { }
+    constructor(
+        private expenseService: ExpenseService, 
+        private supplierService: SupplierService, 
+        private router: Router,
+        private transactionService: CombinedTransactionService
+    ) { }
 
     notifications: Notification[] = [];
     showNotification(message: string, type: 'success' | 'error' | 'info') {
@@ -222,6 +228,7 @@ export class ExpenseComponent implements OnInit {
                 this.saveSettings();
                 this.showNotification(' ההוצאה נוספה בהצלחה לשרת', 'success');
                 this.loadData();
+                this.transactionService.refreshTransactions(); // רענון העמוד הראשי
                 this.resetForm();
             },
             error: (err: any) => {

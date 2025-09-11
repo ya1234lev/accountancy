@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CustomerService } from '../../services/customers';
 import { Income, IncomeService } from '../../services/income.service';
+import { CombinedTransactionService } from '../../services/combined-transaction.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -118,7 +119,12 @@ export class IncomeComponent implements OnInit {
     // קבלה נוכחית ל-PDF
     currentReceiptForPDF: Receipt | null = null;
 
-    constructor(private router: Router, private customerService: CustomerService, private incomeService: IncomeService) { }
+    constructor(
+        private router: Router, 
+        private customerService: CustomerService, 
+        private incomeService: IncomeService,
+        private transactionService: CombinedTransactionService
+    ) { }
 
     ngOnInit() {
         this.loadData();
@@ -595,6 +601,7 @@ export class IncomeComponent implements OnInit {
             next: (createdIncome: any) => {
                 this.showNotification(' ההכנסה נוספה בהצלחה לשרת', 'success');
                 this.loadData(); // רענון רשימת הקבלות
+                this.transactionService.refreshTransactions(); // רענון העמוד הראשי
             },
             error: (err: any) => {
                 console.log("error", err);

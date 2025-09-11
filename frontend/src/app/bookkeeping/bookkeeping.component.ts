@@ -108,6 +108,9 @@ export class BookkeepingComponent implements OnInit, OnDestroy {
         this.transactions = transactions;
         this.updateStatistics();
       });
+    
+    // Load initial data
+    this.transactionService.loadTransactions();
   }
 
   ngOnDestroy() {
