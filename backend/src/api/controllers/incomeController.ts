@@ -65,13 +65,22 @@ export const updateIncome = async (req: Request, res: Response) => {
 
 export const deleteIncome = async (req: Request, res: Response) => {
   try {
-    const income = await incomeService.deleteIncome(req.params.id);
+    const id = req.params.id;
+    console.log('מנסה למחוק הכנסה עם ID:', id);
+    
+    const income = await incomeService.deleteIncome(id);
     if (!income) {
+      console.log('הכנסה לא נמצאה עם ID:', id);
       return res.status(404).json({ message: 'Income not found' });
     }
+    
+    console.log('הכנסה נמחקה בהצלחה:', income);
     res.json({ message: 'Income deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting income', error });
+    console.error('שגיאה במחיקת הכנסה:', error);
+    console.error('ID שנתקבל:', req.params.id);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ message: 'Error deleting income', error: errorMessage });
   }
 };
 
