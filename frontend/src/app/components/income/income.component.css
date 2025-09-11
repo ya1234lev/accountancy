@@ -1,6 +1,8 @@
 /* מערכת הכנסות מותאמת לעמוד הראשי */
 .app-layout {
   min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background: var(--gray-50);
 }
 
@@ -30,7 +32,7 @@
 
 .back-button-fixed {
   position: fixed;
-  top: 130px; /* מתחת לכותרת הקבועה */
+  top: 80px; /* מתחת לכותרת הקבועה */
   left: 2rem;
   z-index: 999; /* נמוך יותר מהכותרת */
   display: flex;
@@ -114,8 +116,10 @@
 }
 
 .main-content {
-  padding: 2rem 0;
-  margin-top: 120px; /* מקום לכותרת הקבועה */
+  padding: 1rem 0;
+  margin-top: 80px; /* מקום לכותרת הקבועה */
+  height: calc(100vh - 80px);
+  overflow-y: auto;
 }
 
 .tab-content {
@@ -236,39 +240,38 @@
 }
 
 .btn {
-  padding: 0.875rem 2rem;
+  padding: 0.5rem 1rem;
   border-radius: var(--border-radius);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 1px solid transparent;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--gray-700);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #0d47a1 100%);
+  background: var(--primary-color);
   color: var(--white);
   border-color: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(15, 43, 119, 0.3);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #0d47a1 0%, var(--primary-color) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(15, 43, 119, 0.4);
+  background: var(--gray-50);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .btn-primary:disabled {
   background: var(--gray-400);
   border-color: var(--gray-400);
+  color: var(--white);
   cursor: not-allowed;
 }
 
@@ -288,16 +291,13 @@
 .btn-outline {
   background: var(--white);
   color: var(--gray-700);
-  border: 2px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
 }
 
 .btn-outline:hover {
   background: var(--gray-50);
   border-color: var(--primary-color);
   color: var(--primary-color);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .btn-sm {
@@ -432,7 +432,7 @@
 /* מערכת הודעות */
 .notifications-container {
   position: fixed;
-  top: 130px; /* מתחת לכותרת הקבועה */
+  top: 100px; /* מתחת לכותרת הקבועה */
   right: 1rem; /* עברנו לצד ימין כדי לא להתנגש עם כפתור החזרה */
   z-index: 9999;
   display: flex;
@@ -631,7 +631,7 @@
   }
 
   .back-button-fixed {
-    top: 170px; /* התאמה לטלפונים */
+    top: 150px; /* התאמה לטלפונים */
   }
 
   .notifications-container {

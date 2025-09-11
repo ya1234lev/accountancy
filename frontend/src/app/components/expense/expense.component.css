@@ -1,164 +1,8 @@
+/* מערכת הוצאות מותאמת לעמוד הראשי */
 .app-layout {
   min-height: 100vh;
-  background: var(--gray-50);
-}
-
-.app-header {
-  background: var(--white);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem 0;
-  margin-bottom: 2rem;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.app-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--accent-color);
-}
-
-.nav-menu {
-  display: flex;
-  gap: 1rem;
-}
-
-.nav-button {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  color: var(--gray-600);
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  transition: background 0.2s;
-}
-
-.nav-button.active,
-.nav-button:hover {
-  background: var(--accent-color);
-}
-
-.main-content {
-  padding: 2rem 0;
-  margin-top: 120px; /* מקום לכותרת הקבועה */
-}
-
-.card {
-  background: var(--white);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 2rem;
-}
-
-.card-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--gray-900);
-}
-
-.card-body {
-  padding: 1.5rem;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.btn {
-  padding: 0.5rem 1.5rem;
-  border-radius: var(--border-radius);
-  border: none;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-primary {
-  background: var(--accent-color);
-  color: var(--white);
-}
-
-.btn-outline {
-  background: var(--white);
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
-}
-
-.btn-link {
-  background: none;
-  color: var(--accent-color);
-  border: none;
-  font-size: 0.9rem;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.data-table th,
-.data-table td {
-  border: 1px solid var(--border-color);
-  padding: 0.5rem;
-  text-align: center;
-}
-
-.data-table th {
-  background: var(--gray-100);
-  font-weight: 600;
-}
-
-.no-data {
-  text-align: center;
-  color: var(--gray-500);
-  margin-top: 1rem;
-}
-
-.new-supplier-form {
-  margin-bottom: 2rem;
-  background: var(--gray-50);
-  padding: 1rem;
-  border-radius: var(--border-radius);
-}
-
-/* מערכת הכנסות מותאמת לעמוד הראשי */
-.app-layout {
-  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background: var(--gray-50);
 }
 
@@ -188,7 +32,7 @@
 
 .back-button-fixed {
   position: fixed;
-  top: 130px; /* מתחת לכותרת הקבועה */
+  top: 80px; /* מתחת לכותרת הקבועה */
   left: 2rem;
   z-index: 999; /* נמוך יותר מהכותרת */
   display: flex;
@@ -228,6 +72,364 @@
   color: var(--white);
   transform: scale(1.05);
   box-shadow: 0 4px 16px rgba(15, 43, 119, 0.4);
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.app-icon {
+  color: var(--primary-color);
+}
+
+.nav-menu {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--gray-700);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.nav-button:hover {
+  background: var(--gray-50);
+  border-color: var(--primary-color);
+}
+
+.nav-button.active {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+.main-content {
+  padding: 1rem 0;
+  margin-top: 80px; /* מקום לכותרת הקבועה */
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin: 0;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.875rem;
+  margin-bottom: 1.125rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  margin-bottom: 0.375rem;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.625rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(15, 43, 119, 0.1);
+}
+
+.readonly-input {
+  background: var(--gray-100);
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-top: 0.625rem;
+  padding-top: 0.625rem;
+  border-top: none;
+  background: transparent;
+  margin-left: 0;
+  margin-right: auto;
+  margin-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  direction: ltr;
+  text-align: left;
+  width: fit-content;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--white);
+  color: var(--gray-700);
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background: var(--gray-50);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-primary:disabled {
+  background: var(--gray-400);
+  border-color: var(--gray-400);
+  color: var(--white);
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: var(--white);
+  color: var(--gray-700);
+  border: 1px solid var(--border-color);
+}
+
+.btn-outline:hover {
+  background: var(--gray-50);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+  background: var(--gray-50);
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.data-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: var(--gray-500);
+}
+
+.new-supplier-form {
+  background: var(--gray-50);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 2rem;
+}
+
+.new-supplier-form h3 {
+  margin: 0 0 1rem 0;
+  color: var(--gray-800);
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+}
+
+.settings-section h3 {
+  margin: 0 0 1rem 0;
+  color: var(--gray-800);
+}
+
+/* מערכת הודעות */
+.notifications-container {
+  position: fixed;
+  top: 100px; /* מתחת לכותרת הקבועה */
+  right: 1rem; /* עברנו לצד ימין כדי לא להתנגש עם כפתור החזרה */
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 400px;
+}
+
+.notification {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  border-right: 4px solid;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.notification--visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification--success {
+  border-color: var(--success-color);
+}
+
+.notification--error {
+  border-color: var(--danger-color);
+}
+
+.notification--info {
+  border-color: var(--primary-color);
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+}
+
+.notification--success .notification-icon {
+  color: var(--success-color);
+}
+
+.notification--error .notification-icon {
+  color: var(--danger-color);
+}
+
+.notification--info .notification-icon {
+  color: var(--primary-color);
+}
+
+.notification-message {
+  flex: 1;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-500);
+  padding: 0.25rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.notification-close:hover {
+  background: var(--gray-100);
+  color: var(--gray-800);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.search-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+}
+
+.table-container {
+  overflow-x: auto;
 }
 
 .app-title {
@@ -864,7 +1066,7 @@
   }
 
   .back-button-fixed {
-    top: 170px; /* התאמה לטלפונים */
+    top: 150px; /* התאמה לטלפונים */
   }
 
   .notifications-container {
@@ -875,10 +1077,6 @@
 
   .form-grid {
     grid-template-columns: 1fr;
-  }
-
-  .payment-methods {
-    flex-direction: column;
   }
 
   .form-actions {
