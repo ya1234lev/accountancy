@@ -385,7 +385,6 @@
 /* שורה במצב מחיקה */
 .row--pending-delete {
   background: #f3f4f6 !important; /* רקע אפור יותר בולט */
-  border: 1px solid var(--warning-color) !important;
   transition: all 0.3s ease-in-out;
   opacity: 0.8;
 }
@@ -411,8 +410,9 @@
 .delete-actions {
   display: flex;
   gap: 0.5rem;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+  padding-right: 0.5rem;
 }
 
 .delete-confirm-btn {
