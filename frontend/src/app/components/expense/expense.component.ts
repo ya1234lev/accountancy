@@ -47,6 +47,11 @@ export class ExpenseComponent implements OnInit {
     showNewSupplierForm = false;
     newSupplier: Partial<Supplier> = { name: '', phone: '', email: '', address: '' };
 
+    // עריכת ספק
+    showEditSupplierModal = false;
+    editingSupplier: Supplier | null = null;
+    modalEditSupplier: Partial<Supplier> = { name: '', phone: '', email: '', address: '' };
+
     categories: string[] = ['ריהוט', 'נקיון', 'קופה קטנה', 'תחזוקה', 'משרד', 'רכב', 'שיווק', 'שירותים מקצועיים', 'ציוד', 'חשמל', 'אחר'];
 
     // PDF Upload
@@ -279,6 +284,43 @@ export class ExpenseComponent implements OnInit {
 
         });
     }
+
+    // שמירת עדכון ספק
+    saveEditedSupplier() {
+        if (!this.modalEditSupplier.name?.trim()) {
+            this.showNotification('שם הספק הוא שדה חובה', 'error');
+            return;
+        }
+
+        if (!this.editingSupplier) {
+            this.showNotification('שגיאה בטעינת נתוני הספק', 'error');
+            return;
+        }
+
+        this.supplierService.updateSupplier(this.editingSupplier.id, this.modalEditSupplier).subscribe({
+            next: (updatedSupplier) => {
+                // עדכון הספק ברשימה המקומית
+                const index = this.suppliers.findIndex(s => s.id === this.editingSupplier!.id);
+                if (index !== -1) {
+                    this.suppliers[index] = { ...this.suppliers[index], ...updatedSupplier };
+                }
+                this.showNotification('ספק עודכן בהצלחה', 'success');
+                this.closeEditSupplierModal();
+                this.loadSuppliers(); // טעינה מחדש לוודא סנכרון
+            },
+            error: (err) => {
+                console.error('שגיאה בעדכון ספק:', err);
+                this.showNotification('שגיאה בעדכון ספק', 'error');
+            }
+        });
+    }
+
+    // סגירת מודל עריכת ספק
+    closeEditSupplierModal() {
+        this.showEditSupplierModal = false;
+        this.editingSupplier = null;
+        this.modalEditSupplier = { name: '', phone: '', email: '', address: '' };
+    }
     
     mapExpense(expense: Partial<Expense>): any {
         // ממיר אובייקט הוצאה מה-UI לאובייקט תואם סכמת השרת (IExpense)
@@ -319,7 +361,16 @@ export class ExpenseComponent implements OnInit {
         this.showNotification(' עריכה בפיתוח', 'info');
     }
     editSupplier(supplier: Supplier) {
-        this.showNotification(' עריכה בפיתוח', 'info');
+        this.editingSupplier = supplier;
+        this.modalEditSupplier = {
+            id: supplier.id,
+            name: supplier.name,
+            contactPerson: supplier.contactPerson || '',
+            phone: supplier.phone || '',
+            email: supplier.email || '',
+            address: supplier.address || ''
+        };
+        this.showEditSupplierModal = true;
     }
 
     onSupplierChange() {

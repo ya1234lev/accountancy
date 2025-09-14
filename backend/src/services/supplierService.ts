@@ -6,7 +6,7 @@ export const createSupplier = async (supplierData: Partial<ISupplier>): Promise<
 };
 
 export const getSupplierById = async (id: string): Promise<ISupplier | null> => {
-  return await Supplier.findById(id);
+  return await Supplier.findOne({ id: id });
 };
 
 export const getAllSuppliers = async (): Promise<ISupplier[]> => {
@@ -14,11 +14,11 @@ export const getAllSuppliers = async (): Promise<ISupplier[]> => {
 };
 
 export const updateSupplier = async (id: string, supplierData: Partial<ISupplier>): Promise<ISupplier | null> => {
-  return await Supplier.findByIdAndUpdate(id, supplierData, { new: true });
+  return await Supplier.findOneAndUpdate({ id: id }, supplierData, { new: true });
 };
 
 export const deleteSupplier = async (id: string): Promise<ISupplier | null> => {
-  return await Supplier.findByIdAndDelete(id);
+  return await Supplier.findOneAndDelete({ id: id });
 };
 
 // מחיקת כל הספקים

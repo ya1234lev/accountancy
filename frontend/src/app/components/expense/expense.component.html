@@ -310,10 +310,10 @@
                                         <input type="email" id="supplierEmail" [(ngModel)]="newSupplier.email"
                                             name="supplierEmail">
                                     </div>
-                                    <div class="form-group full-width">
+                                    <div class="form-group">
                                         <label for="supplierAddress">כתובת</label>
-                                        <textarea id="supplierAddress" [(ngModel)]="newSupplier.address"
-                                            name="supplierAddress" rows="2"></textarea>
+                                        <input type="text" id="supplierAddress" [(ngModel)]="newSupplier.address"
+                                            name="supplierAddress" >
                                     </div>
                                 </div>
                                 <div class="form-actions">
@@ -390,4 +390,51 @@
             </div>
         </div>
     </main>
+</div>
+
+<!-- מודל עריכת ספק -->
+<div *ngIf="showEditSupplierModal" class="modal-overlay" (click)="closeEditSupplierModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>עריכת ספק</h3>
+            <button class="modal-close" (click)="closeEditSupplierModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <form (ngSubmit)="saveEditedSupplier()" #modalEditSupplierForm="ngForm">
+                <div class="form-group">
+                    <label for="editSupplierName">שם ספק</label>
+                    <input type="text" id="editSupplierName" [(ngModel)]="modalEditSupplier.name" 
+                           name="editSupplierName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierContactPerson">איש קשר</label>
+                    <input type="text" id="editSupplierContactPerson" [(ngModel)]="modalEditSupplier.contactPerson" 
+                           name="editSupplierContactPerson">
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierPhone">טלפון</label>
+                    <input type="tel" id="editSupplierPhone" [(ngModel)]="modalEditSupplier.phone" 
+                           name="editSupplierPhone">
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierEmail">אימייל</label>
+                    <input type="email" id="editSupplierEmail" [(ngModel)]="modalEditSupplier.email" 
+                           name="editSupplierEmail">
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierAddress">כתובת</label>
+                    <textarea id="editSupplierAddress" [(ngModel)]="modalEditSupplier.address" 
+                              name="editSupplierAddress" rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" [disabled]="!modalEditSupplierForm.form.valid">
+                        עדכן ספק
+                    </button>
+                    <button type="button" class="btn btn-outline" (click)="closeEditSupplierModal()">
+                        ביטול
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

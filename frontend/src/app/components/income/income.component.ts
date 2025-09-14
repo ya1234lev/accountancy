@@ -106,6 +106,11 @@ export class IncomeComponent implements OnInit {
     showNewClientModal = false;
     modalNewClient: Partial<Client> = { name: '', phone: '', email: '', address: '' };
 
+    // עריכת לקוח
+    showEditClientModal = false;
+    editingClient: Client | null = null;
+    modalEditClient: Partial<Client> = { name: '', phone: '', email: '', address: '' };
+
     // הגדרות
     settings = {
         defaultVatRate: 17,
@@ -143,6 +148,11 @@ export class IncomeComponent implements OnInit {
 
     // טעינת נתונים
     loadData() {
+        this.loadClients();
+    }
+
+    // טעינת לקוחות
+    loadClients() {
         // טעינת לקוחות מהשרת תחילה, ואז קבלות
         this.customerService.getCustomers().subscribe({
             next: (data) => {
@@ -399,6 +409,43 @@ export class IncomeComponent implements OnInit {
         this.modalNewClient = { name: '', phone: '', email: '', address: '' };
     }
 
+    // שמירת עדכון לקוח
+    saveEditedClient() {
+        if (!this.modalEditClient.name?.trim()) {
+            this.showNotification('שם הלקוח הוא שדה חובה', 'error');
+            return;
+        }
+
+        if (!this.editingClient) {
+            this.showNotification('שגיאה בטעינת נתוני הלקוח', 'error');
+            return;
+        }
+
+        this.customerService.updateCustomer(this.editingClient.id, this.modalEditClient).subscribe({
+            next: (updatedClient) => {
+                // עדכון הלקוח ברשימה המקומית
+                const index = this.clients.findIndex(c => c.id === this.editingClient!.id);
+                if (index !== -1) {
+                    this.clients[index] = { ...this.clients[index], ...updatedClient };
+                }
+                this.showNotification('לקוח עודכן בהצלחה', 'success');
+                this.closeEditClientModal();
+                this.loadClients(); // טעינה מחדש לוודא סנכרון
+            },
+            error: (err) => {
+                console.error('שגיאה בעדכון לקוח:', err);
+                this.showNotification('שגיאה בעדכון לקוח', 'error');
+            }
+        });
+    }
+
+    // סגירת מודל עריכת לקוח
+    closeEditClientModal() {
+        this.showEditClientModal = false;
+        this.editingClient = null;
+        this.modalEditClient = { name: '', phone: '', email: '', address: '' };
+    }
+
     // איפוס טופס
     resetForm() {
         this.newReceipt = {
@@ -619,7 +666,15 @@ export class IncomeComponent implements OnInit {
 
     // עריכת לקוח
     editClient(client: Client) {
-        this.showNotification(' עריכה בפיתוח', 'info');
+        this.editingClient = client;
+        this.modalEditClient = {
+            id: client.id,
+            name: client.name,
+            phone: client.phone || '',
+            email: client.email || '',
+            address: client.address || ''
+        };
+        this.showEditClientModal = true;
     }
 
     // קבלות מסוננות

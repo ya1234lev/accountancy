@@ -357,10 +357,10 @@
                     <label for="clientEmail">אימייל</label>
                     <input type="email" id="clientEmail" [(ngModel)]="newClient.email" name="clientEmail">
                   </div>
-                  <div class="form-group full-width">
+                  <div class="form-group ">
                     <label for="clientAddress">כתובת</label>
-                    <textarea id="clientAddress" [(ngModel)]="newClient.address" name="clientAddress"
-                      rows="2"></textarea>
+                    <input type="text" id="clientAddress" [(ngModel)]="newClient.address" name="clientAddress"
+                      >
                   </div>
                 </div>
                 <div class="form-actions">
@@ -474,6 +474,45 @@
             שמור לקוח
           </button>
           <button type="button" class="btn btn-outline" (click)="closeNewClientModal()">
+            ביטול
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- מודל עריכת לקוח -->
+<div *ngIf="showEditClientModal" class="modal-overlay" (click)="closeEditClientModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>עריכת לקוח</h3>
+      <button class="modal-close" (click)="closeEditClientModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="saveEditedClient()" #modalEditClientForm="ngForm">
+        <div class="form-group">
+          <label for="editClientName">שם לקוח</label>
+          <input type="text" id="editClientName" [(ngModel)]="modalEditClient.name" name="editClientName" required>
+        </div>
+        <div class="form-group">
+          <label for="editClientPhone">טלפון</label>
+          <input type="tel" id="editClientPhone" [(ngModel)]="modalEditClient.phone" name="editClientPhone">
+        </div>
+        <div class="form-group">
+          <label for="editClientEmail">אימייל</label>
+          <input type="email" id="editClientEmail" [(ngModel)]="modalEditClient.email" name="editClientEmail">
+        </div>
+        <div class="form-group">
+          <label for="editClientAddress">כתובת</label>
+          <textarea id="editClientAddress" [(ngModel)]="modalEditClient.address" name="editClientAddress"
+            rows="2"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!modalEditClientForm.form.valid">
+            עדכן לקוח
+          </button>
+          <button type="button" class="btn btn-outline" (click)="closeEditClientModal()">
             ביטול
           </button>
         </div>

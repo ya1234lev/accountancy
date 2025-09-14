@@ -110,10 +110,9 @@
         </thead>
         <tbody>
           <tr *ngFor="let transaction of displayedTransactions; let i = index"
-            [class.row--income]="transaction.type === 'income'" 
-            [class.row--expense]="transaction.type === 'expense'"
+            [class.row--income]="transaction.type === 'income'" [class.row--expense]="transaction.type === 'expense'"
             [class.row--pending-delete]="pendingDeleteId === transaction.id">
-            
+
             <td class="cell--date">{{transaction.date | date:'dd/MM/yyyy'}}</td>
             <td class="cell--type">
               <span class="badge" [class]="'badge--' + transaction.type">
@@ -137,24 +136,23 @@
             </td>
             <td class="cell--actions">
               <!-- כפתור מחיקה רגיל -->
-              <button *ngIf="pendingDeleteId !== transaction.id" (click)="deleteTransaction(i)" class="btn btn--danger btn--sm" title="מחק עסקה">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <button *ngIf="pendingDeleteId !== transaction.id" (click)="deleteTransaction(i)"
+                class="btn btn--danger btn--sm" title="מחק עסקה">
+                מחק<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   <path
                     d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" />
                 </svg>
               </button>
-              
+
               <!-- כפתורי אישור וביטול במצב מחיקה -->
               <div *ngIf="pendingDeleteId === transaction.id" class="delete-actions">
-                <button (click)="confirmDelete()" class="btn btn--danger btn--sm delete-confirm-btn" 
-                        [disabled]="isDeleting" 
-                        title="אשר מחיקה">
+                <button (click)="confirmDelete()" class="btn btn--danger btn--sm delete-confirm-btn"
+                  [disabled]="isDeleting" title="אשר מחיקה">
                   <span *ngIf="!isDeleting">✓</span>
                   <span *ngIf="isDeleting" class="spinner">⏳</span>
                 </button>
-                <button (click)="cancelDelete()" class="btn btn--secondary btn--sm delete-cancel-btn" 
-                        [disabled]="isDeleting"
-                        title="בטל מחיקה">
+                <button (click)="cancelDelete()" class="btn btn--secondary btn--sm delete-cancel-btn"
+                  [disabled]="isDeleting" title="בטל מחיקה">
                   ✕
                 </button>
               </div>

@@ -6,7 +6,7 @@ export const createCustomer = async (customerData: ICustomer): Promise<ICustomer
 };
 
 export const getCustomerById = async (id: string): Promise<ICustomer | null> => {
-  return await Customer.findById(id);
+  return await Customer.findOne({ id: id });
 };
 
 export const getAllCustomers = async (): Promise<ICustomer[]> => {
@@ -14,11 +14,11 @@ export const getAllCustomers = async (): Promise<ICustomer[]> => {
 };
 
 export const updateCustomer = async (id: string, customerData: Partial<ICustomer>): Promise<ICustomer | null> => {
-  return await Customer.findByIdAndUpdate(id, customerData, { new: true });
+  return await Customer.findOneAndUpdate({ id: id }, customerData, { new: true });
 };
 
 export const deleteCustomer = async (id: string): Promise<ICustomer | null> => {
-  return await Customer.findByIdAndDelete(id);
+  return await Customer.findOneAndDelete({ id: id });
 };
 
 // מחיקת כל הלקוחות
