@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
 
 export interface Client {
   id: string;
@@ -45,8 +44,8 @@ export interface Income {
   providedIn: 'root'
 })
 export class IncomeService {
-  private apiUrl = `${environment.apiUrl}/incomes`;
-  private clientsUrl = `${environment.apiUrl}/customers`;
+  private apiUrl = 'http://localhost:3000/api/incomes';
+  private clientsUrl = 'http://localhost:3000/api/customers';
 
   constructor(private http: HttpClient) {}
 
