@@ -218,6 +218,17 @@ export const uploadMultiplePdfs = async (req: Request, res: Response) => {
           success: true
         });
 
+        // 🗑️ מחיקת הקובץ לאחר עיבוד מוצלח
+        try {
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`✅ קובץ זמני ${i + 1} נמחק בהצלחה לאחר עיבוד`);
+          }
+        } catch (deleteError) {
+          console.error(`⚠️ שגיאה במחיקת קובץ זמני ${i + 1}:`, deleteError);
+          // לא נעצור את התהליך בגלל זה
+        }
+
       } catch (fileError) {
         console.error(`❌ שגיאה בעיבוד קובץ ${i + 1} (${file.originalname}):`, fileError);
         
@@ -717,3 +728,103 @@ function parseIsraeliDate(dateStr: string): string | null {
   }
   return null;
 }
+
+// 🧹 פונקציה לניקוי קבצים ישנים מתיקיית uploads
+export const cleanupOldFiles = async (req: Request, res: Response) => {
+  console.log('🧹 מתחיל ניקוי קבצים ישנים מתיקיית uploads');
+  
+  try {
+    const uploadsPath = path.join(__dirname, '../../../uploads');
+    
+    if (!fs.existsSync(uploadsPath)) {
+      return res.json({
+        success: true,
+        message: 'תיקיית uploads לא קיימת',
+        deletedFiles: 0
+      });
+    }
+    
+    const files = fs.readdirSync(uploadsPath);
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 שעות במילישניות
+    let deletedCount = 0;
+    const deletedFiles: string[] = [];
+    
+    for (const file of files) {
+      const filePath = path.join(uploadsPath, file);
+      const stats = fs.statSync(filePath);
+      const fileAge = now - stats.mtime.getTime();
+      
+      if (fileAge > maxAge) {
+        try {
+          fs.unlinkSync(filePath);
+          deletedFiles.push(file);
+          deletedCount++;
+          console.log(`🗑️ נמחק קובץ ישן: ${file}`);
+        } catch (deleteError) {
+          console.error(`❌ שגיאה במחיקת קובץ ${file}:`, deleteError);
+        }
+      }
+    }
+    
+    console.log(`✅ ניקוי הושלם: נמחקו ${deletedCount} קבצים ישנים`);
+    
+    res.json({
+      success: true,
+      message: `נמחקו ${deletedCount} קבצים ישנים (מעל 24 שעות)`,
+      deletedFiles,
+      deletedCount
+    });
+    
+  } catch (error) {
+    console.error('❌ שגיאה בניקוי קבצים ישנים:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בניקוי קבצים ישנים',
+      error: error instanceof Error ? error.message : 'שגיאה לא ידועה'
+    });
+  }
+};
+
+// 🕐 פונקציה לניקוי אוטומטי (להרצה מתוזמנת)
+export const scheduleCleanup = () => {
+  // ניקוי כל 6 שעות
+  setInterval(async () => {
+    console.log('🕐 מריץ ניקוי אוטומטי מתוזמן');
+    try {
+      const uploadsPath = path.join(__dirname, '../../../uploads');
+      
+      if (!fs.existsSync(uploadsPath)) {
+        return;
+      }
+      
+      const files = fs.readdirSync(uploadsPath);
+      const now = Date.now();
+      const maxAge = 24 * 60 * 60 * 1000; // 24 שעות
+      let deletedCount = 0;
+      
+      for (const file of files) {
+        const filePath = path.join(uploadsPath, file);
+        const stats = fs.statSync(filePath);
+        const fileAge = now - stats.mtime.getTime();
+        
+        if (fileAge > maxAge) {
+          try {
+            fs.unlinkSync(filePath);
+            deletedCount++;
+            console.log(`🗑️ ניקוי אוטומטי: נמחק קובץ ישן ${file}`);
+          } catch (deleteError) {
+            console.error(`❌ שגיאה בניקוי אוטומטי של קובץ ${file}:`, deleteError);
+          }
+        }
+      }
+      
+      if (deletedCount > 0) {
+        console.log(`✅ ניקוי אוטומטי הושלם: נמחקו ${deletedCount} קבצים ישנים`);
+      }
+      
+    } catch (error) {
+      console.error('❌ שגיאה בניקוי אוטומטי:', error);
+    }
+  }, 6 * 60 * 60 * 1000); // 6 שעות
+};
