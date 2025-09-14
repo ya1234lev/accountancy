@@ -33,8 +33,10 @@ import { CombinedTransactionService, NotificationMessage } from '../../services/
   styles: [`
     .notifications-container {
       position: fixed;
-      top: 1rem;
-      right: 1rem;
+      bottom: 2rem !important; /* למטה במקום למעלה */
+      left: 1rem !important; /* צד שמאל */
+      right: auto !important; /* מבטל כל הגדרה של right */
+      top: auto !important; /* מבטל כל הגדרה של top */
       z-index: 9999;
       display: flex;
       flex-direction: column;
@@ -48,7 +50,7 @@ import { CombinedTransactionService, NotificationMessage } from '../../services/
       border-radius: var(--border-radius-lg);
       box-shadow: var(--shadow-lg);
       opacity: 0;
-      transform: translateX(100%);
+      transform: translateX(-100%); /* משנה כיוון האנימציה לשמאל */
       transition: all 0.3s ease-in-out;
       cursor: pointer;
       overflow: hidden;
@@ -60,15 +62,15 @@ import { CombinedTransactionService, NotificationMessage } from '../../services/
     }
 
     .notification--success {
-      border-right: 4px solid var(--success-color);
+      border-left: 4px solid var(--success-color); /* שינוי מ-right ל-left */
     }
 
     .notification--error {
-      border-right: 4px solid var(--danger-color);
+      border-left: 4px solid var(--danger-color); /* שינוי מ-right ל-left */
     }
 
     .notification--info {
-      border-right: 4px solid var(--accent-color);
+      border-left: 4px solid var(--accent-color); /* שינוי מ-right ל-left */
     }
 
     .notification-content {
@@ -123,10 +125,11 @@ import { CombinedTransactionService, NotificationMessage } from '../../services/
 
     @media (max-width: 768px) {
       .notifications-container {
-        right: 0.5rem;
-        left: 0.5rem;
-        top: 0.5rem;
-        max-width: none;
+        bottom: 2rem !important; /* למטה במובייל */
+        left: 1rem !important; /* צד שמאל */
+        right: auto !important; /* מבטל right */
+        top: auto !important; /* מבטל top */
+        max-width: calc(100vw - 1rem);
       }
 
       .notification-content {

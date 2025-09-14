@@ -432,8 +432,10 @@
 /* מערכת הודעות */
 .notifications-container {
   position: fixed;
-  top: 100px; /* מתחת לכותרת הקבועה */
-  right: 1rem; /* עברנו לצד ימין כדי לא להתנגש עם כפתור החזרה */
+  bottom: 2rem !important; /* למטה במקום למעלה */
+  left: 1rem !important; /* צד שמאל */
+  right: auto !important; /* מבטל כל הגדרה של right */
+  top: auto !important; /* מבטל כל הגדרה של top */
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -445,7 +447,7 @@
   background: var(--white);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-lg);
-  border-right: 4px solid;
+  border-left: 4px solid; /* שינוי מ-right ל-left */
   transform: translateX(-100%);
   opacity: 0;
   transition: all 0.3s ease-in-out;
@@ -635,8 +637,10 @@
   }
 
   .notifications-container {
-    top: 170px; /* התאמה לטלפונים */
-    right: 0.5rem;
+    bottom: 2rem !important; /* למטה במובייל */
+    left: 1rem !important; /* צד שמאל */
+    right: auto !important; /* מבטל כל הגדרה של right */
+    top: auto !important; /* מבטל כל הגדרה של top */
     max-width: calc(100vw - 1rem);
   }
 

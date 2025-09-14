@@ -108,17 +108,14 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
   }
 
   deleteTransaction(displayedIndex: number) {
-    // Find the actual index in the original transactions array
+    // Find the actual index in the original transactions array using unique ID
     const transaction = this.displayedTransactions[displayedIndex];
-    const actualIndex = this.transactions.findIndex(t => 
-      t.date === transaction.date && 
-      t.amount === transaction.amount && 
-      t.description === transaction.description &&
-      t.type === transaction.type
-    );
+    const actualIndex = this.transactions.findIndex(t => t.id === transaction.id);
     
     if (actualIndex !== -1) {
       this.transactionService.deleteTransaction(actualIndex);
+    } else {
+      console.error('לא נמצאה עסקה עם ID:', transaction.id);
     }
   }
 

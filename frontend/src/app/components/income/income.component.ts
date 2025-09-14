@@ -358,12 +358,13 @@ export class IncomeComponent implements OnInit {
         }
         this.customerService.addCustomer(this.newClient).subscribe({
             next: (createdClient) => {
-                console.log('הלקוח נוסף בהצלחה');
+                this.showNotification('הלקוח נוסף בהצלחה', 'success');
                 this.newClient = { name: '', phone: '', email: '', address: '' };
                 this.showNewClientForm = false;
                 this.loadData(); // רענון רשימת הלקוחות
             },
             error: (err) => {
+                this.showNotification('שגיאה בהוספת לקוח', 'error');
                 console.log('שגיאה בהוספת לקוח', err);
             }
         });
@@ -426,7 +427,7 @@ export class IncomeComponent implements OnInit {
     // יצירת PDF
     generatePDF() {
         if (!this.newReceipt.receiptNumber) {
-            this.showNotification('נא למלא את פרטי הקבלה תחילה', 'error');
+            this.showNotification('נא למלא את פרטי הקבלה ', 'error');
             return;
         }
 
@@ -599,14 +600,14 @@ export class IncomeComponent implements OnInit {
 
         this.incomeService.addIncome(income).subscribe({
             next: (createdIncome: any) => {
-                this.showNotification(' ההכנסה נוספה בהצלחה לשרת', 'success');
+                this.showNotification(' ההכנסה נוספה בהצלחה ', 'success');
                 this.loadData(); // רענון רשימת הקבלות
                 this.transactionService.refreshTransactions(); // רענון העמוד הראשי
             },
             error: (err: any) => {
                 console.log("error", err);
 
-                this.showNotification('שגיאה בהוספת הכנסה לשרת', 'error');
+                this.showNotification('שגיאה בהוספת הכנסה ', 'error');
             }
         });
     }

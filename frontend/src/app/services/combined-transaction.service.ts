@@ -56,7 +56,6 @@ export class CombinedTransactionService {
 
     public loadTransactions(): void {
         this.loadingSubject.next(true);
-        this.showNotification('info', 'טוען נתונים...', 0);
 
         // בדיקה אם יש cache תקף
         const now = Date.now();
@@ -93,11 +92,7 @@ export class CombinedTransactionService {
             clients: clientsRequest,
             suppliers: suppliersRequest
         }).pipe(
-            tap((rawData) => {
-                console.log('נתונים גולמיים מהשרת:', rawData);
-            }),
             map(({ incomes, expenses, clients, suppliers }: { incomes: any[], expenses: any[], clients: any[], suppliers: any[] }) => {
-                const startTime = performance.now();
                 const transactions: CombinedTransaction[] = [];
 
                 // טיפול במקרה שהנתונים מגיעים מה-cache
@@ -158,42 +153,18 @@ export class CombinedTransactionService {
                     }, transactions);
                 }
 
-                const endTime = performance.now();
-                console.log(`עיבוד ${transactions.length} עסקאות לקח ${Math.round(endTime - startTime)}ms`);
-
                 return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             }),
             tap((transactions: CombinedTransaction[]) => {
                 this.transactionsSubject.next(transactions);
                 this.loadingSubject.next(false);
-                this.removeNotification('loading'); // הסרת הודעת הטעינה
-
-                // ספירת עסקאות עם לקוחות וספקים לא מזוהים
-                const unknownClientsCount = transactions.filter(t =>
-                    t.type === 'income' && t.clientName?.includes('לקוח לא נמצא')
-                ).length;
-                
-                const unknownSuppliersCount = transactions.filter(t =>
-                    t.type === 'expense' && t.supplierName?.includes('ספק לא נמצא')
-                ).length;
-
-                let message = `נטענו ${transactions.length} עסקאות בהצלחה`;
-                if (unknownClientsCount > 0 || unknownSuppliersCount > 0) {
-                    const unknownParts = [];
-                    if (unknownClientsCount > 0) unknownParts.push(`${unknownClientsCount} עם לקוחות לא מזוהים`);
-                    if (unknownSuppliersCount > 0) unknownParts.push(`${unknownSuppliersCount} עם ספקים לא מזוהים`);
-                    message += ` (${unknownParts.join(', ')})`;
-                }
-
-                this.showNotification('success', message, 3000);
+                this.removeNotification('loading');
             })
         ).subscribe({
             error: (error) => {
                 console.error('שגיאה בטעינת עסקאות:', error);
                 this.loadingSubject.next(false);
                 this.removeNotification('loading');
-                this.showNotification('error', 'שגיאה בטעינת נתונים מהשרת');
-                // במקרה של שגיאה, נציג רשימה ריקה
                 this.transactionsSubject.next([]);
             }
         });
@@ -224,36 +195,30 @@ export class CombinedTransactionService {
 
     // עיבוד נתונים בחבילות לשיפור ביצועים
     private processBatch<T>(items: T[], processor: (item: T) => CombinedTransaction, results: CombinedTransaction[], batchSize: number = 100): void {
-        // בדיקה שהפרמטרים תקינים
         if (!items || !Array.isArray(items) || items.length === 0) {
-            console.warn('processBatch: items is not a valid array or is empty', items);
             return;
         }
         
         if (!processor || typeof processor !== 'function') {
-            console.warn('processBatch: processor is not a valid function', processor);
             return;
         }
         
         if (!results || !Array.isArray(results)) {
-            console.warn('processBatch: results is not a valid array', results);
             return;
         }
 
         for (let i = 0; i < items.length; i += batchSize) {
             const batch = items.slice(i, i + batchSize);
-            batch.forEach((item, index) => {
+            batch.forEach((item) => {
                 try {
                     if (item && typeof item === 'object') {
                         const processedItem = processor(item);
                         if (processedItem) {
                             results.push(processedItem);
                         }
-                    } else {
-                        console.warn(`processBatch: invalid item at index ${i + index}`, item);
                     }
                 } catch (error) {
-                    console.warn('שגיאה בעיבוד פריט:', error, item);
+                    console.warn('שגיאה בעיבוד פריט:', error);
                 }
             });
         }
@@ -268,13 +233,6 @@ export class CombinedTransactionService {
             return;
         }
 
-        console.log('מנסה למחוק עסקה:', {
-            index,
-            transactionId: transaction.id,
-            transactionType: transaction.type,
-            originalData: transaction.originalData
-        });
-
         if (transaction.type === 'income') {
             this.incomeService.deleteIncome(transaction.id).subscribe({
                 next: () => {
@@ -283,9 +241,7 @@ export class CombinedTransactionService {
                 },
                 error: (error) => {
                     console.error('שגיאה במחיקת הכנסה:', error);
-                    console.error('ID שנשלח:', transaction.id);
-                    console.error('מידע נוסף על העסקה:', transaction.originalData);
-                    this.showNotification('error', `שגיאה במחיקת הכנסה: ${error.error?.message || error.message}`);
+                    this.showNotification('error', 'שגיאה במחיקת הכנסה');
                 }
             });
         } else if (transaction.type === 'expense') {
@@ -296,16 +252,14 @@ export class CombinedTransactionService {
                 },
                 error: (error) => {
                     console.error('שגיאה במחיקת הוצאה:', error);
-                    console.error('ID שנשלח:', transaction.id);
-                    console.error('מידע נוסף על העסקה:', transaction.originalData);
-                    this.showNotification('error', `שגיאה במחיקת הוצאה: ${error.error?.message || error.message}`);
+                    this.showNotification('error', 'שגיאה במחיקת הוצאה');
                 }
             });
         }
     }
 
     clearAllData(): void {
-        this.showNotification('info', 'מוחק את כל הנתונים מהשרת...', 0);
+        this.showNotification('info', 'מוחק את כל הנתונים ...', 0);
         
         // שימוש בנקודות קצה ייעודיות למחיקת כל הנתונים
         forkJoin({
@@ -331,17 +285,9 @@ export class CombinedTransactionService {
                 const totalDeleted = incomesCount + expensesCount;
                 
                 if (totalDeleted > 0) {
-                    let message = `נמחקו ${totalDeleted} עסקאות בהצלחה מהשרת`;
-                    if (incomesCount > 0 && expensesCount > 0) {
-                        message += ` (${incomesCount} הכנסות, ${expensesCount} הוצאות)`;
-                    } else if (incomesCount > 0) {
-                        message += ` (${incomesCount} הכנסות)`;
-                    } else if (expensesCount > 0) {
-                        message += ` (${expensesCount} הוצאות)`;
-                    }
-                    this.showNotification('success', message);
+                    this.showNotification('success', 'נמחק בהצלחה');
                 } else {
-                    this.showNotification('info', 'לא נמצאו עסקאות למחיקה או הייתה שגיאה');
+                    this.showNotification('info', 'לא נמצאו עסקאות למחיקה');
                 }
                 
                 // ניקוי ה-cache
@@ -352,7 +298,7 @@ export class CombinedTransactionService {
             error: (error) => {
                 console.error('שגיאה במחיקת נתונים:', error);
                 this.removeNotification('loading');
-                this.showNotification('error', 'שגיאה במחיקת נתונים מהשרת');
+                this.showNotification('error', 'שגיאה במחיקת נתונים ');
                 this.loadTransactions(); // רענון הנתונים גם במקרה של שגיאה
             }
         });
@@ -394,8 +340,6 @@ export class CombinedTransactionService {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        this.showNotification('success', 'הנתונים המפורטים יוצאו בהצלחה');
     }
 
     getTotalIncome(): number {
