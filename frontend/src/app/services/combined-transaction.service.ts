@@ -22,10 +22,14 @@ export interface CombinedTransaction {
 
 export interface NotificationMessage {
     id: string;
-    type: 'success' | 'error' | 'warning' | 'info';
+    type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
     message: string;
     timestamp: Date;
     duration?: number;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+    confirmText?: string;
+    cancelText?: string;
 }
 
 @Injectable({
@@ -375,6 +379,23 @@ export class CombinedTransactionService {
                 this.removeNotification(notification.id);
             }, duration);
         }
+    }
+
+    public showConfirmation(message: string, onConfirm: () => void, onCancel?: () => void): void {
+        const notification: NotificationMessage = {
+            id: Date.now().toString(),
+            type: 'confirm',
+            message,
+            timestamp: new Date(),
+            duration: 0, // לא נעלם אוטומטית
+            onConfirm,
+            onCancel,
+            confirmText: 'מחק',
+            cancelText: 'ביטול'
+        };
+
+        const notifications = this.notificationsSubject.value;
+        this.notificationsSubject.next([...notifications, notification]);
     }
 
     removeNotification(id: string): void {
