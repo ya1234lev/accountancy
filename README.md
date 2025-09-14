@@ -66,8 +66,9 @@ cd ../frontend && npm install
 
 2. **Create `.env` file in backend directory:**
 ```env
-MONGODB_URI=mongodb+srv://chany:jbh@accountancy.4ioxvs8.mongodb.net/
+MONGODB_URI=your_mongodb_connection_string_here
 PORT=3000
+NODE_ENV=development
 ```
 
 3. **Run the application:**
