@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createExpense, getExpense, getExpenses, updateExpense, deleteExpense, deleteAllExpenses, uploadPdf, uploadMultiplePdfs, upload } from '../controllers/expenseController';
+import { createExpense, getExpense, getExpenses, updateExpense, deleteExpense, deleteAllExpenses, uploadPdf, uploadMultiplePdfs, upload, cleanupOldFiles } from '../controllers/expenseController';
 
 const router = Router();
 
@@ -52,5 +52,8 @@ router.post('/expenses/upload-multiple-pdfs', (req, res, next) => {
         uploadMultiplePdfs(req, res);
     });
 });
+
+// ראוט לניקוי קבצים ישנים
+router.delete('/expenses/cleanup-files', cleanupOldFiles);
 
 export default router;

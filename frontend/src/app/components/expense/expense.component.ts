@@ -226,7 +226,7 @@ export class ExpenseComponent implements OnInit {
             next: () => {
                 this.settings.nextExpenseNumber++;
                 this.saveSettings();
-                this.showNotification(' ההוצאה נוספה בהצלחה לשרת', 'success');
+                this.showNotification(' ההוצאה נוספה בהצלחה ', 'success');
                 this.loadData();
                 this.transactionService.refreshTransactions(); // רענון העמוד הראשי
                 this.resetForm();
@@ -234,7 +234,7 @@ export class ExpenseComponent implements OnInit {
             error: (err: any) => {
                 console.log("error", err);
 
-                this.showNotification('שגיאה בהוספת הוצאה לשרת', 'error');
+                this.showNotification('שגיאה בהוספת הוצאה ', 'error');
             }
 
 
@@ -265,7 +265,7 @@ export class ExpenseComponent implements OnInit {
 
         this.supplierService.addSupplier(this.newSupplier).subscribe({
             next: () => {
-                this.showNotification('הספק נוסף לשרת בהצלחה', 'success')
+                this.showNotification('הספק נוסף בהצלחה', 'success')
 
                 this.loadSuppliers();
                 this.showNewSupplierForm = false;
@@ -273,7 +273,7 @@ export class ExpenseComponent implements OnInit {
             },
             error: (err: any) => {
                 console.log("error", err);
-                this.showNotification('שגיאה בהוספת ספק לשרת', 'error');
+                this.showNotification('שגיאה בהוספת ספק', 'error');
 
             }
 
@@ -409,7 +409,7 @@ export class ExpenseComponent implements OnInit {
                 formData.append('pdfFiles', file);
             });
 
-            this.showNotification(`מעבד ${files.length} קבצי PDF...`, 'info');
+            this.showNotification(`מעבד קבצי PDF...`, 'info');
 
             // שימוש ב-API החדש שמשמר ישירות
             const response = await this.expenseService.uploadMultiplePdfs(formData);
@@ -419,7 +419,7 @@ export class ExpenseComponent implements OnInit {
                 
                 if (successfullyProcessed > 0) {
                     this.showNotification(
-                        `הצלחה! נוצרו ${successfullyProcessed} הוצאות חדשות מתוך ${files.length} קבצים`,
+                        `נוצרו ${successfullyProcessed} הוצאות חדשות `,
                         'success'
                     );
                     
@@ -427,12 +427,12 @@ export class ExpenseComponent implements OnInit {
                     this.loadExpensesAndMapSuppliers();
                 }
                 
-                if (errorsCount > 0) {
-                    this.showNotification(
-                        `${errorsCount} קבצים לא עובדו בהצלחה`,
-                        'error'
-                    );
-                }
+                // if (errorsCount > 0) {
+                //     this.showNotification(
+                //         `${errorsCount} קבצים לא עובדו בהצלחה`,
+                //         'error'
+                //     );
+                // }
 
                 // הצגת פרטים מפורטים בקונסול
                 console.log('תוצאות עיבוד קבצי PDF:', response.data);

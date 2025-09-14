@@ -20,6 +20,8 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
   readonly INITIAL_DISPLAY_COUNT = 10;
   readonly INCREMENT_COUNT = 10;
   readonly Math = Math; // For template access
+  pendingDeleteId: string | null = null; // ID של השורה במצב מחיקה
+  isDeleting: boolean = false; // מצב מחיקה פעיל
   private destroy$ = new Subject<void>();
 
   constructor(private transactionService: CombinedTransactionService) {}
@@ -108,18 +110,44 @@ export class TransactionsTableComponent implements OnInit, OnDestroy {
   }
 
   deleteTransaction(displayedIndex: number) {
-    // Find the actual index in the original transactions array
-    const transaction = this.displayedTransactions[displayedIndex];
-    const actualIndex = this.transactions.findIndex(t => 
-      t.date === transaction.date && 
-      t.amount === transaction.amount && 
-      t.description === transaction.description &&
-      t.type === transaction.type
-    );
+    // אם כבר במצב מחיקה - בטל
+    if (this.isDeleting) return;
     
-    if (actualIndex !== -1) {
-      this.transactionService.deleteTransaction(actualIndex);
+    const transaction = this.displayedTransactions[displayedIndex];
+    
+    // אם השורה כבר במצב מחיקה - בטל
+    if (this.pendingDeleteId === transaction.id) {
+      this.pendingDeleteId = null;
+      return;
     }
+    
+    // הכנס למצב מחיקה
+    this.pendingDeleteId = transaction.id;
+  }
+
+  confirmDelete() {
+    if (!this.pendingDeleteId || this.isDeleting) return;
+    
+    const transaction = this.transactions.find(t => t.id === this.pendingDeleteId);
+    if (transaction) {
+      const actualIndex = this.transactions.findIndex(t => t.id === this.pendingDeleteId);
+      if (actualIndex !== -1) {
+        this.isDeleting = true;
+        // השירות כבר מציג התראה, אז לא צריך להציג כאן
+        this.transactionService.deleteTransaction(actualIndex);
+        
+        // נמתין קצת ואז נבטל את המצב
+        setTimeout(() => {
+          this.isDeleting = false;
+          this.pendingDeleteId = null;
+        }, 1000);
+      }
+    }
+  }
+
+  cancelDelete() {
+    if (this.isDeleting) return;
+    this.pendingDeleteId = null;
   }
 
   clearAllData() {
