@@ -163,11 +163,12 @@ import { Router } from '@angular/router';
 
 
     .stat-card__action {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 500;
       margin-top: 0.5rem;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      opacity: 1;
+      color: var(--primary-color);
+      transition: color 0.3s ease;
     }
     .stat-card__action--expense {
       color: var(--danger-color);
@@ -177,6 +178,7 @@ import { Router } from '@angular/router';
     }
     .stat-card.clickable:hover .stat-card__action {
       opacity: 1;
+      font-weight: 600;
     }
 
     @media (max-width: 768px) {
